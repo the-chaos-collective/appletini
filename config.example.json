@@ -1,0 +1,35 @@
+{
+  "github": {
+    "host": "github.com",
+    "gqlAPI": "https://api.github.com/graphql",
+    "username": "DarVoid",
+    "token": "GITHUB_ACCESS_TOKEN",
+    "name": "Duque",
+    "email": "jorgemduque@hotmail.com"
+  },
+  "poll": {
+    "frequency_s": 10
+  },
+  "tracking":{
+    "byLabel":[
+      {
+        "identifier": "",
+        "label": "",
+        "repo": "",
+        "owner": ""
+      }
+    ],
+    "byRepo":[
+      {
+        "identifier": "",
+        "repo": "",
+        "owner": ""
+      }
+
+    ],
+    "projects":[
+
+    ]
+  },
+  "item_count": 12
+}

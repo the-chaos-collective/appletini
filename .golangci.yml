@@ -1,0 +1,20 @@
+linters:
+  enable-all: true
+  disable:
+    - funlen
+    - gofumpt
+    - gci
+
+linters-settings:
+  depguard:
+    rules:
+      prevent_unmaintained_packages:
+        list-mode: lax # allow unless explicitely denied
+        files:
+          - $all
+          - "!$test"
+        allow:
+          - $gostd
+        deny:
+          - pkg: io/ioutil
+            desc: "replaced by io and os packages since Go 1.16: https://tip.golang.org/doc/go1.16#ioutil"

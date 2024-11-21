@@ -1,0 +1,40 @@
+query fetchIssues {
+  viewer {
+    projectV2(number: 2) {
+      items(first: 10) {
+        nodes {
+          fieldValues(first: 10) {
+            edges {
+              node {
+                ... on ProjectV2ItemFieldTextValue {
+                  text
+                  item {
+                    content {
+                      ... on Issue {
+                        id
+                        title
+                        assignees(first: 10) {
+                          nodes {
+                            login
+                          }
+                        }
+                      }
+                    }
+                    project {
+                      title
+                      url
+                    }
+                    type
+                    creator {
+                      login
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
