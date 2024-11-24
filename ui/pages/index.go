@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"fmt"
 	"os"
 
 	"git_applet/gitter"
@@ -15,72 +16,40 @@ type IndexPage struct {
 }
 
 func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {
-	prPersonalItems := make([]ui.Itemable, 0)
-	prLabeledItems := make([]ui.Itemable, 0)
-	prRepoItems := make([]ui.Itemable, 0)
 
-	for _, pr := range prs["personal"] {
-		prPersonalItems = append(prPersonalItems, components.PullRequest{
-			Title:          pr.Title,
-			Number:         pr.Number,
-			Mergeable:      pr.Mergeable,
-			ReviewDecision: pr.ReviewDecision,
-			HeadRefName:    pr.HeadRefName,
-			BaseRefName:    pr.BaseRefName,
-			Permalink:      pr.Permalink,
-		}.Build())
-	}
-
-	for _, pr := range prs["m20"] {
-		prLabeledItems = append(prLabeledItems, components.PullRequest{
-			Title:          pr.Title,
-			Number:         pr.Number,
-			Mergeable:      pr.Mergeable,
-			ReviewDecision: pr.ReviewDecision,
-			HeadRefName:    pr.HeadRefName,
-			BaseRefName:    pr.BaseRefName,
-			Permalink:      pr.Permalink,
-		}.Build())
-	}
-	for _, pr := range prs["m21"] {
-		prRepoItems = append(prRepoItems, components.PullRequest{
-			Title:          pr.Title,
-			Number:         pr.Number,
-			Mergeable:      pr.Mergeable,
-			ReviewDecision: pr.ReviewDecision,
-			HeadRefName:    pr.HeadRefName,
-			BaseRefName:    pr.BaseRefName,
-			Permalink:      pr.Permalink,
-		}.Build())
+	result := make([]ui.Itemable, 0, 5) // separator + quit button + 3 tracking types by default
+	for key, value := range prs {
+		fmt.Println(key)
+		prList := make([]ui.Itemable, 0, 1) // at least one pr
+		for _, pr := range value {
+			prList = append(prList, components.PullRequest{
+				Title:          pr.Title,
+				Number:         pr.Number,
+				Mergeable:      pr.Mergeable,
+				ReviewDecision: pr.ReviewDecision,
+				HeadRefName:    pr.HeadRefName,
+				BaseRefName:    pr.BaseRefName,
+				Permalink:      pr.Permalink,
+			}.Build())
+		}
+		tmp := ui.SystraySubmenu{
+			Title: key,
+			Submenu: &ui.SystrayMenu{
+				Items: prList,
+			},
+		}
+		result = append(result, tmp)
 	}
 
-	return []ui.Itemable{
-		ui.SystraySubmenu{
-			Title: "My Pull Requests",
-			Submenu: &ui.SystrayMenu{
-				Items: prPersonalItems,
-			},
+	result = append(result, ui.SystraySeparator{})
+	result = append(result, ui.SystrayButton{
+		Title: "Quit",
+		Action: func() {
+			os.Exit(0)
 		},
-		ui.SystraySubmenu{
-			Title: "Labeled Pull Requests",
-			Submenu: &ui.SystrayMenu{
-				Items: prLabeledItems,
-			},
-		},
-		ui.SystraySubmenu{
-			Title: "Repo Pull Requests",
-			Submenu: &ui.SystrayMenu{
-				Items: prRepoItems,
-			},
-		},
-		ui.SystraySeparator{},
-		ui.SystrayButton{
-			Title: "Quit",
-			Action: func() {
-				os.Exit(0)
-			},
-		},
-	}
+	})
+
+	return result
 }
 
 func (page IndexPage) run() {

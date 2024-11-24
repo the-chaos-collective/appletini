@@ -73,12 +73,10 @@ func (menu *SystrayMenu) sync() {
 			menuItem := fyne.NewMenuItem(item.Title, item.Action)
 			menu.fyneMenu.Items = append(menu.fyneMenu.Items, menuItem)
 
-			break
 		case Separator:
 			menuItem := fyne.NewMenuItemSeparator()
 			menu.fyneMenu.Items = append(menu.fyneMenu.Items, menuItem)
 
-			break
 		case Submenu:
 			item := (item).(SystraySubmenu)
 
@@ -89,7 +87,6 @@ func (menu *SystrayMenu) sync() {
 			item.Submenu.fyneMenu = menuItem.ChildMenu
 			item.Submenu.sync()
 
-			break
 		}
 	}
 
