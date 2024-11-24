@@ -1,5 +1,6 @@
 config.json
 graphql.config.json
 finalQuery.gql
+byRepoQuery.gql
 
 /dist/
