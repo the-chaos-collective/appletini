@@ -1,11 +1,10 @@
 package types
 
 type Config struct {
-	ChromeProfile string       `json:"chrome_profile"`
-	Github        GithubConfig `json:"github"`
-	Poll          PollConfig   `json:"poll"`
-	Tracking      Tracking     `json:"tracking"`
-	ItemCount     int          `json:"item_count"`
+	Github    GithubConfig `json:"github"`
+	Poll      PollConfig   `json:"poll"`
+	Tracking  Tracking     `json:"tracking"`
+	ItemCount int          `json:"item_count"`
 }
 
 type GithubConfig struct {

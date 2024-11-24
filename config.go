@@ -15,7 +15,6 @@ func loadConfig() error {
 	if err != nil {
 		return fmt.Errorf("unmarshaling config: %w", err)
 	}
-	fmt.Printf("%v\n", Config.Tracking)
-
+	// fmt.Printf("Config: %v\n", Config.Github.Token)
 	return nil
 }

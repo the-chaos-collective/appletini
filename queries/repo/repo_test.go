@@ -1,80 +1,59 @@
-package repo
+package repo_test
 
 import (
-	"fmt"
-	"log"
+	"errors"
+	"testing"
+
+	"git_applet/queries/repo"
 )
 
-func ExampleMakePrList() {
-	prList, err := MakeRepoQuery(Config{
-		Trackers: []Tracker{
-			{
-				Name:       "git_appletini",
-				Owner:      "darvoid",
-				Identifier: "cenas",
+type testConfig struct {
+	name          string
+	inputs        repo.Config
+	expectedError error
+}
+
+func TestValidation(t *testing.T) {
+	testCases := []testConfig{
+		{
+			name: "CommentsAmount > 0",
+			inputs: repo.Config{
+				Trackers:       []repo.Tracker{},
+				ReviewAmount:   10,
+				PrAmount:       10,
+				CommentsAmount: 0,
 			},
+			expectedError: errors.New("invalid config: CommentsAmount must not be zero or less"),
 		},
-		ReviewAmount:   10,
-		PrAmount:       10,
-		CommentsAmount: 10,
-	})
-	if err != nil {
-		log.Fatal(err)
+		{
+			name: "PrAmount > 0",
+			inputs: repo.Config{
+				Trackers:       []repo.Tracker{},
+				ReviewAmount:   10,
+				PrAmount:       0,
+				CommentsAmount: 10,
+			},
+			expectedError: errors.New("invalid config: PrAmount must not be zero or less"),
+		},
+		{
+			name: "ReviewAmount > 0",
+			inputs: repo.Config{
+				Trackers:       []repo.Tracker{},
+				ReviewAmount:   0,
+				PrAmount:       10,
+				CommentsAmount: 10,
+			},
+			expectedError: errors.New("invalid config: ReviewAmount must not be zero or less"),
+		},
+		// TODO: add more cases
 	}
 
-	fmt.Println(prList.generatedQuery)
-	// Output:
-	// query PRs {
-	//   babilon: repository(name: "ant-colony", owner: "god") {
-	//     label(name: "bug") {
-	//       pullRequests(
-	//         orderBy: { field: CREATED_AT, direction: ASC }
-	//         first: 10
-	//         states: [OPEN]
-	//       ) {
-	//         ...getPullRequest
-	//       }
-	//     }
-	//   }
-	// }
-	// fragment getPullRequest on PullRequestConnection {
-	//   edges {
-	//     node {
-	//       id
-	//       title
-	//       url
-	//       baseRefName
-	//       headRefName
-	//       reviewRequests {
-	//         totalCount
-	//       }
-	//       reviewDecision
-	//       createdAt
-	//       permalink
-	//       mergeable
-	//       state
-	//       ...getReviewer
-	//     }
-	//   }
-	// }
-	// fragment getReviewer on PullRequest {
-	//   reviews(first: 10) {
-	//     edges {
-	//       node {
-	//         state
-	//         body
-	//         comments(first: 10) {
-	//           edges {
-	//             node {
-	//               body
-	//             }
-	//           }
-	//         }
-	//         author {
-	//           login
-	//         }
-	//       }
-	//     }
-	//   }
-	// }
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			_, err := repo.MakeRepoQuery(testCase.inputs)
+			if err.Error() != testCase.expectedError.Error() {
+				t.Fatalf("\ngot: %v\nexpected: %v", err.Error(), testCase.expectedError.Error())
+			}
+		})
+	}
 }
