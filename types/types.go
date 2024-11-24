@@ -1,11 +1,11 @@
 package types
 
 type Config struct {
-	ChromeProfile string       `json:"chrome_profile"`
-	Github        GithubConfig `json:"github"`
-	Poll          PollConfig   `json:"poll"`
-	Tracking      Tracking     `json:"tracking"`
-	ItemCount     int          `json:"item_count"`
+	Github    GithubConfig `json:"github"`
+	Poll      PollConfig   `json:"poll"`
+	Tracking  Tracking     `json:"tracking"`
+	ItemCount int          `json:"item_count"`
+	Darkmode  bool         `json:"darkmode"`
 }
 
 type GithubConfig struct {
@@ -21,33 +21,33 @@ type PollConfig struct {
 	Frequency int `json:"frequency_s"`
 }
 type Tracking struct {
-	ByLabel        RepoSet          `json:"ByLabel"`
-	ByRepo         UnlabeledRepoSet `json:"byRepo"`
-	Project        ProjectSet       `json:"project"`
-	CommentsAmount string           `json:"commentsAmount"`
-	ReviewAmount   string           `json:"reviewAmount"`
-	PrAmount       string           `json:"prAmount"`
+	ByLabel        LabeledRepoSet `json:"byLabel"`
+	ByRepo         RepoSet        `json:"byRepo"`
+	Projects       ProjectSet     `json:"projects"`
+	CommentsAmount string         `json:"commentsAmount"`
+	ReviewAmount   string         `json:"reviewAmount"`
+	PrAmount       string         `json:"prAmount"`
 }
-type Repo struct {
+type LabeledRepo struct {
+	Identifier string `json:"identifier"`
 	Owner      string `json:"owner"`
 	RepoName   string `json:"repo"`
-	Identifier string `json:"identifier"`
 	Label      string `json:"label"`
 }
-type UnlabeledRepo struct {
+type Repo struct {
+	Identifier string `json:"identifier"`
 	Owner      string `json:"owner"`
 	RepoName   string `json:"repo"`
-	Identifier string `json:"identifier"`
 }
 
 type Project struct {
+	Identifier string `json:"identifier"`
 	Owner      string `json:"owner"`
 	RepoName   string `json:"repo"`
-	Identifier string `json:"identifier"`
 }
 
 type (
-	RepoSet          []Repo
-	UnlabeledRepoSet []UnlabeledRepo
-	ProjectSet       []Project
+	LabeledRepoSet []LabeledRepo
+	RepoSet        []Repo
+	ProjectSet     []Project
 )

@@ -27,7 +27,7 @@ var (
 
 // visual stuff.
 var (
-	trackedPRs map[string]*fyne.MenuItem
+	trackingMenuMap map[string]*fyne.MenuItem
 
 	mprincipal *fyne.Menu
 	status     *systray.MenuItem

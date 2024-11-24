@@ -86,6 +86,7 @@ func setupPolling(mock bool) error {
 			labeled,
 			repo,
 		},
+
 		Mock: mock,
 	}
 
@@ -93,7 +94,11 @@ func setupPolling(mock bool) error {
 }
 
 func getCurrentAccessToken() string {
-	return os.Getenv(Config.Github.Token)
+	token, present := os.LookupEnv(Config.Github.Token)
+	if !present {
+		log.Fatal("token not present")
+	}
+	return token
 }
 
 func pollPRs(prs chan<- map[string][]gitter.PullRequest) {
@@ -103,7 +108,12 @@ func pollPRs(prs chan<- map[string][]gitter.PullRequest) {
 			log.Printf("when polling for PRs: %v", err)
 		}
 
-		prs <- trackedPrs
+		hashCheck(func(hash string) {
+			if hash != currentHash {
+				currentHash = hash
+				prs <- trackedPrs
+			}
+		})
 
 		time.Sleep(getPollDuration())
 	}

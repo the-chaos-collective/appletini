@@ -29,8 +29,10 @@ func (systray *Systray) createApp() {
 	desk.SetSystemTrayMenu(systray.MainMenu.fyneMenu)
 
 	(*systray.fyneApp).Lifecycle().SetOnStarted(func() {
+
 		// set default icon on main menu
 		desk.SetSystemTrayIcon(systray.icon)
+
 	})
 }
 
@@ -73,12 +75,10 @@ func (menu *SystrayMenu) sync() {
 			menuItem := fyne.NewMenuItem(item.Title, item.Action)
 			menu.fyneMenu.Items = append(menu.fyneMenu.Items, menuItem)
 
-			break
 		case Separator:
 			menuItem := fyne.NewMenuItemSeparator()
 			menu.fyneMenu.Items = append(menu.fyneMenu.Items, menuItem)
 
-			break
 		case Submenu:
 			item := (item).(SystraySubmenu)
 
@@ -89,7 +89,6 @@ func (menu *SystrayMenu) sync() {
 			item.Submenu.fyneMenu = menuItem.ChildMenu
 			item.Submenu.sync()
 
-			break
 		}
 	}
 

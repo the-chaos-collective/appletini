@@ -14,15 +14,15 @@ func (config Config) String() string {
 		config.Trackers,
 		config.PrAmount,
 		config.ReviewAmount,
-		config.CommentsAmount)
+		config.CommentsAmount,
+	)
 }
 
 func (tracker Tracker) String() string {
 	return fmt.Sprintf(`{
 		Owner: %v,
 		Name: %v,
-		Identifier: %v,
-		Label: %v
+		Identifier: %v
 	}`,
 		tracker.Owner,
 		tracker.Name,

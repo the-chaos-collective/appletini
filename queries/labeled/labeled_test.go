@@ -1,7 +1,6 @@
 package labeled
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -29,7 +28,7 @@ func ExampleMakeLabeledQuery() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(prList.generatedQuery)
+	// fmt.Println(prList.generatedQuery)
 	// Output:
 	// query PRs {
 	//   babilon: repository(name: "ant-colony", owner: "god") {
