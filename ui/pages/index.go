@@ -40,14 +40,16 @@ func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemabl
 		}
 		result = append(result, tmp)
 	}
-
-	result = append(result, ui.SystraySeparator{})
-	result = append(result, ui.SystrayButton{
-		Title: "Quit",
-		Action: func() {
-			os.Exit(0)
+	finalItems := []ui.Itemable{
+		ui.SystraySeparator{},
+		ui.SystrayButton{
+			Title: "Quit",
+			Action: func() {
+				os.Exit(0)
+			},
 		},
-	})
+	}
+	result = append(result, finalItems...)
 
 	return result
 }
