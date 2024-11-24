@@ -8,10 +8,13 @@ import (
 	"git_applet/ui"
 	"git_applet/ui/components"
 	"git_applet/ui/icons"
+
+	"fyne.io/fyne/v2"
 )
 
 type IndexPage struct {
 	systray      *ui.Systray
+	Darkmode     bool
 	PullRequests <-chan map[string][]gitter.PullRequest
 }
 
@@ -62,7 +65,14 @@ func (page IndexPage) run() {
 }
 
 func (page IndexPage) Run() {
-	systray := ui.MakeSystray("Git Appletini", icons.ResIconDefault)
+
+	icon := fyne.Resource(DefaultIcon{})
+	if page.Darkmode {
+		icon = icons.ResIconDefault
+	} else {
+		icon = icons.ResIconDefaultDark
+	}
+	systray := ui.MakeSystray("Git Appletini", icon)
 
 	systray.Setup()
 

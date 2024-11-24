@@ -31,7 +31,9 @@ tasks:
     cmds:
       - mkdir -p dist/
       - task: clean
-      - go build -o dist/ *.go
+      - go build -o dist/main *.go
+      - sudo chmod +x ./dist/main
+      - ./dist/main
     #silent: true
   clean:
     desc: remove dist files

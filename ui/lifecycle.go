@@ -29,8 +29,10 @@ func (systray *Systray) createApp() {
 	desk.SetSystemTrayMenu(systray.MainMenu.fyneMenu)
 
 	(*systray.fyneApp).Lifecycle().SetOnStarted(func() {
+
 		// set default icon on main menu
 		desk.SetSystemTrayIcon(systray.icon)
+
 	})
 }
 

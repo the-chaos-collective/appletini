@@ -5,6 +5,7 @@ type Config struct {
 	Poll      PollConfig   `json:"poll"`
 	Tracking  Tracking     `json:"tracking"`
 	ItemCount int          `json:"item_count"`
+	Darkmode  bool         `json:"darkmode"`
 }
 
 type GithubConfig struct {
