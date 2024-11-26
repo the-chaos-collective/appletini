@@ -23,8 +23,12 @@ func MakeRepoQuery(config Config) (RepoQuery, error) {
 
 func validateConfig(config Config) error {
 	for i, repoConfig := range config.Trackers {
+		if repoConfig.Title == "" {
+			return fmt.Errorf("Trackers[%v].Title must not be empty", i)
+		}
+
 		if repoConfig.Id == "" {
-			return fmt.Errorf("Trackers[%v].Identifier must not be empty", i)
+			return fmt.Errorf("Trackers[%v].Id must not be empty", i)
 		}
 
 		if repoConfig.Repo == "" {
