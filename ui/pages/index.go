@@ -2,9 +2,13 @@ package pages
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"strconv"
+	"strings"
 
 	"git_applet/gitter"
+	"git_applet/types"
 	"git_applet/ui"
 	"git_applet/ui/components"
 	"git_applet/ui/icons"
@@ -16,13 +20,13 @@ type IndexPage struct {
 	systray      *ui.Systray
 	Darkmode     bool
 	PullRequests <-chan map[string][]gitter.PullRequest
+	Trackers     types.Tracking
 }
 
 func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {
 
 	result := make([]ui.Itemable, 0, 5) // separator + quit button + 3 tracking types by default
 	for key, value := range prs {
-		fmt.Println(key)
 		prList := make([]ui.Itemable, 0, 1) // at least one pr
 		for _, pr := range value {
 			prList = append(prList, components.PullRequest{
@@ -35,8 +39,31 @@ func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemabl
 				Permalink:      pr.Permalink,
 			}.Build())
 		}
+
+		groupTitle := ""
+
+		if key == "personal" {
+			groupTitle = "My Pull Requests"
+		} else {
+			trackerType := strings.Split(key, "_")[0]
+
+			idx, err := strconv.Atoi(strings.Split(key, "_")[1])
+			if err != nil {
+				log.Fatalf("unrecognized query response - malformed key (expected format [type]_[number]): %v", key)
+			}
+
+			switch trackerType {
+			case "repo":
+				groupTitle = page.Trackers.ByRepo[idx].Title
+			case "labeled":
+				groupTitle = page.Trackers.ByLabel[idx].Title
+			default:
+				groupTitle = fmt.Sprintf("Unsupported tracker type: %s", trackerType)
+			}
+		}
+
 		tmp := ui.SystraySubmenu{
-			Title: key,
+			Title: groupTitle,
 			Submenu: &ui.SystrayMenu{
 				Items: prList,
 			},

@@ -23,8 +23,12 @@ func MakeLabeledQuery(config Config) (LabeledQuery, error) {
 
 func validateConfig(config Config) error {
 	for i, tracker := range config.Trackers {
-		if tracker.Identifier == "" {
-			return fmt.Errorf("Trackers[%v].Identifier must not be empty", i)
+		if tracker.Title == "" {
+			return fmt.Errorf("Trackers[%v].Title must not be empty", i)
+		}
+
+		if tracker.Id == "" {
+			return fmt.Errorf("Trackers[%v].Id must not be empty", i)
 		}
 
 		if tracker.Label == "" {

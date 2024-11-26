@@ -40,7 +40,7 @@ func generateQuery(conf Config) (string, error) {
 	// query created from config
 	savedPRQuery := fmt.Sprint(prQuery)
 
-	fileOutputPath := "./byRepoQuery.gql"
+	fileOutputPath := "queries/repo/finalQuery.gql"
 
 	outputFile, err := os.Create(fileOutputPath)
 	if err != nil {

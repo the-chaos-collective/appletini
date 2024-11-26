@@ -29,12 +29,13 @@ func setupPersonalQuery() (queries.Query, error) {
 
 func setupLabeledQuery() (queries.Query, error) {
 	trackers := []labeled.Tracker{}
-	for _, tracker := range Config.Tracking.ByLabel {
+	for idx, tracker := range Config.Tracking.ByLabel {
 		trackers = append(trackers, labeled.Tracker{
-			Label:      tracker.Label,
-			Repo:       tracker.RepoName,
-			Owner:      tracker.Owner,
-			Identifier: tracker.Identifier,
+			Id:    fmt.Sprintf("labeled_%d", idx),
+			Title: tracker.Title,
+			Owner: tracker.Owner,
+			Repo:  tracker.RepoName,
+			Label: tracker.Label,
 		})
 	}
 
@@ -48,11 +49,12 @@ func setupLabeledQuery() (queries.Query, error) {
 
 func setupRepoQuery() (queries.Query, error) {
 	trackers := []repo.Tracker{}
-	for _, tracker := range Config.Tracking.ByRepo {
+	for idx, tracker := range Config.Tracking.ByRepo {
 		trackers = append(trackers, repo.Tracker{
-			Name:       tracker.RepoName,
-			Owner:      tracker.Owner,
-			Identifier: tracker.Identifier,
+			Id:    fmt.Sprintf("repo_%d", idx),
+			Title: tracker.Title,
+			Owner: tracker.Owner,
+			Repo:  tracker.RepoName,
 		})
 	}
 

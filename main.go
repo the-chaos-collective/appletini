@@ -22,6 +22,7 @@ func main() {
 	indexPage := pages.IndexPage{
 		PullRequests: prs,
 		Darkmode:     Config.Darkmode,
+		Trackers:     Config.Tracking,
 	}
 
 	mockQueries := false
