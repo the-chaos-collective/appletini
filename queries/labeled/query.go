@@ -2,9 +2,9 @@ package labeled
 
 import (
 	"bytes"
+	_ "embed"
 	"fmt"
 	"html/template"
-	"os"
 	"strings"
 
 	"github.com/ettle/strcase"
@@ -17,15 +17,11 @@ var funcMap = template.FuncMap{
 	"ToUpper": strings.ToUpper,
 }
 
+//go:embed templates/prMultiRepoByLabel.gql
+var tpl string
+
 func generateQuery(conf Config) (string, error) {
-	templatePath := "queries/labeled/templates/prMultiRepoByLabel.gql"
-
-	tpl, err := os.ReadFile(templatePath)
-	if err != nil {
-		return "", fmt.Errorf("cannot read template file: %w", err)
-	}
-
-	loadedTemplate, err := template.New(templatePath).Funcs(funcMap).Parse(string(tpl))
+	loadedTemplate, err := template.New("prMultiRepoByLabel").Funcs(funcMap).Parse(string(tpl))
 	if err != nil {
 		return "", fmt.Errorf("cannot load template funcmap: %w", err)
 	}
@@ -39,19 +35,6 @@ func generateQuery(conf Config) (string, error) {
 
 	// query created from config
 	savedPRQuery := fmt.Sprint(prQuery)
-
-	fileOutputPath := "queries/labeled/finalQuery.gql"
-
-	outputFile, err := os.Create(fileOutputPath)
-	if err != nil {
-		return "", fmt.Errorf("cannot create file: %w", err)
-	}
-
-	// write string to file
-	_, err = outputFile.WriteString(savedPRQuery)
-	if err != nil {
-		return "", fmt.Errorf("cannot write to file: %w", err)
-	}
 
 	return savedPRQuery, nil
 }
