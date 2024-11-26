@@ -8,16 +8,16 @@ func ExampleMakeLabeledQuery() {
 	prList, err := MakeLabeledQuery(Config{
 		Trackers: []Tracker{
 			{
-				Label:      "invalid",
-				Repo:       "git_appletini",
-				Owner:      "darvoid",
-				Identifier: "cenas",
+				Label: "invalid",
+				Repo:  "git_appletini",
+				Owner: "darvoid",
+				Id:    "cenas",
 			},
 			{
-				Label:      "teste",
-				Repo:       "git_appletini",
-				Owner:      "darvoid",
-				Identifier: "cenas2",
+				Label: "teste",
+				Repo:  "git_appletini",
+				Owner: "darvoid",
+				Id:    "cenas2",
 			},
 		},
 		ReviewAmount:   10,

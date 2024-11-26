@@ -26,9 +26,9 @@ func TestQueryCreation(t *testing.T) {
 			inputs: Config{
 				Trackers: []Tracker{
 					{
-						Name:       "git_appletini",
-						Owner:      "darvoid",
-						Identifier: "cenas",
+						Repo:  "git_appletini",
+						Owner: "darvoid",
+						Id:    "cenas",
 					},
 				},
 				ReviewAmount:   10,

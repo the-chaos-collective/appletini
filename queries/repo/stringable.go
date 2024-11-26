@@ -20,11 +20,13 @@ func (config Config) String() string {
 
 func (tracker Tracker) String() string {
 	return fmt.Sprintf(`{
+		ID: %v,
 		Owner: %v,
-		Name: %v,
-		Identifier: %v
+		Repo: %v,
+		Title: %v
 	}`,
+		tracker.Id,
 		tracker.Owner,
-		tracker.Name,
-		tracker.Identifier)
+		tracker.Repo,
+		tracker.Title)
 }

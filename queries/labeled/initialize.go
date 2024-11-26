@@ -23,7 +23,7 @@ func MakeLabeledQuery(config Config) (LabeledQuery, error) {
 
 func validateConfig(config Config) error {
 	for i, tracker := range config.Trackers {
-		if tracker.Identifier == "" {
+		if tracker.Id == "" {
 			return fmt.Errorf("Trackers[%v].Identifier must not be empty", i)
 		}
 

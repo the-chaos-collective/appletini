@@ -1,7 +1,7 @@
 {{ if .Trackers }}
 query PRs {
 {{ range .Trackers }}
-  {{ .Identifier }}: repository(name: "{{ .Name }}", owner: "{{ .Owner }}") {
+  {{ .Id }}: repository(name: "{{ .Repo }}", owner: "{{ .Owner }}") {
       pullRequests(
         orderBy: { field: CREATED_AT, direction: ASC }
         first: {{$.PrAmount}}

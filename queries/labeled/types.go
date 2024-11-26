@@ -12,8 +12,9 @@ type Config struct {
 }
 
 type Tracker struct {
-	Label      string
-	Repo       string
-	Owner      string
-	Identifier string
+	Id    string
+	Label string
+	Repo  string
+	Owner string
+	Title string
 }
