@@ -14,6 +14,7 @@ linters:
     - staticcheck
     - exhaustive
     - godox
+    - gosec
   disable:
     - funlen
     - gofumpt
