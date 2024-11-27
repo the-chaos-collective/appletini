@@ -3,7 +3,9 @@ name: Cross build
 on:
   release:
     types: [published]
-    
+
+permissions:
+  contents: write
 jobs:
   linux-amd64:
     runs-on: ubuntu-latest
