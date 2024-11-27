@@ -1,0 +1,45 @@
+name: Build and lint
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: read
+  checks: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
+
+      - name: Deps
+        run: |
+          go mod tidy
+          go fmt ./...
+          sudo apt install gcc gcc-multilib libgl1-mesa-dev xorg-dev -y
+
+      - name: Build
+        run: CGO_ENABLED=1 go build *.go
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.60
