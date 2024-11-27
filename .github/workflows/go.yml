@@ -61,3 +61,10 @@ jobs:
 
       - name: Build
         run: CGO_ENABLED=1 GOOS=${{matrix.os}} GOARCH=${{matrix.arch}} go build -o main-${{matrix.os}}-${{matrix.arch}}  *.go
+
+      - name: Gib Artifact pls
+        uses: actions/upload-artifact@v4
+        with:
+          name: appletini-${{matrix.os}}-${{matrix.arch}}
+          path: dist/appletini-${{matrix.os}}-${{matrix.arch}}
+          if-no-files-found: error
