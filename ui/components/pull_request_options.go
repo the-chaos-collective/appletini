@@ -8,7 +8,7 @@ import (
 )
 
 type PullRequestOptions struct {
-	Mergeable       string // TODO prolly some enum-like
+	Mergeable       string
 	ReviewDecision  string
 	RepoBranchRules struct{}
 	Permalink       string
@@ -25,14 +25,6 @@ func (box PullRequestOptions) Build() ui.SystrayMenu {
 						log.Fatalf("error opening tracked PR in browser: %w", err)
 					}
 				},
-			},
-			ui.SystrayButton{
-				Title:  "Close Pull Request",
-				Action: func() {},
-			},
-			ui.SystrayButton{
-				Title:  "Merge Pull Request",
-				Action: func() {},
 			},
 		},
 	}
