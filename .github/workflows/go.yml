@@ -9,6 +9,7 @@ on:
       - DarVoid-patch-1
     tags:
       - "v*"
+    
 
 jobs:
   penguin-bob:
@@ -39,6 +40,13 @@ jobs:
           name: appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           path: dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           if-no-files-found: error
+      - name: Upload artifacts and release assets
+        uses: nanoufo/action-upload-artifacts-and-release-assets@v2
+        with:
+          path: |
+            dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
+          upload-release-files: true
+          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/${{github.ref_name}} 
   bob-janelas:
     runs-on: ubuntu-latest
     strategy:
@@ -67,6 +75,13 @@ jobs:
           name: appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           path: dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           if-no-files-found: error
+      - name: Upload artifacts and release assets
+        uses: nanoufo/action-upload-artifacts-and-release-assets@v2
+        with:
+          path: |
+            dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
+          upload-release-files: true
+          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/${{github.ref_name}} 
 
   mc-bob:
     runs-on: macos-latest
@@ -95,6 +110,13 @@ jobs:
           name: appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           path: dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           if-no-files-found: error
+      - name: Upload artifacts and release assets
+        uses: nanoufo/action-upload-artifacts-and-release-assets@v2
+        with:
+          path: |
+            dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
+          upload-release-files: true
+          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/${{github.ref_name}} 
   mc-old-bob:
     runs-on: macos-13
     strategy:
@@ -122,3 +144,10 @@ jobs:
           name: appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           path: dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           if-no-files-found: error
+      - name: Upload artifacts and release assets
+        uses: nanoufo/action-upload-artifacts-and-release-assets@v2
+        with:
+          path: |
+            dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
+          upload-release-files: true
+          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/${{github.ref_name}} 
