@@ -36,13 +36,13 @@ jobs:
         go-version: '1.20'
     - name: setup vars
       run: |
-        echo "${{ matrix.os}}" | jq ".name" >> GOOS
-        echo "${{ matrix.os}}" | jq ".arch" >> GOARCH
-        - name: setup vars
+        echo "GOOS=$(echo "${{ matrix.os}}" | jq ".name")" >> $GITHUB_ENV
+        echo "GOARCH=$(echo "${{ matrix.os}}" | jq ".arch")" >> $GITHUB_ENV
+        
     - name: check vars
       run: |
-        cat ./GOOS
-        cat ./GOARCH        
+        echo $GOOS
+        echo $GOARCH        
 
    # - name: Build
     #  run: GOOS=${{  }};GOARCH=${{ echo matrix.os | jq ".arch"}} go build -v ./...
