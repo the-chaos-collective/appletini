@@ -10,6 +10,10 @@ linters:
     - dupl
     - dupword
     - nestif
+    - ineffassign
+    - staticcheck
+    - exhaustive
+    - godox
   disable:
     - funlen
     - gofumpt

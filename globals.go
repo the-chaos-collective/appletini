@@ -18,7 +18,6 @@ const CONFIG_FILE = "config.json"
 var (
 	Config             types.Config
 	currentHash        string = ""
-	currentTrackedHash string = ""
 	trackedPrs         map[string][]gitter.PullRequest
 	gqlClient          gitter.GraphQLClient
 
@@ -28,11 +27,5 @@ var (
 // visual stuff.
 var (
 	trackingMenuMap map[string]*fyne.MenuItem
-
-	mprincipal *fyne.Menu
-	status     *systray.MenuItem
-	desk       desktop.App
 )
 
-// global singleton.
-var client *http.Client
