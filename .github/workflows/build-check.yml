@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  pull_request:
+    types: [ opened, edited, synchronize ]
+
+permissions:
+  contents: write
+  
+jobs:
+  linux-amd64:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [linux]
+        arch: [amd64]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
+
+      - name: Deps
+        run: |
+          go mod tidy
+          go fmt ./...
+          sudo apt install gcc gcc-multilib libgl1-mesa-dev xorg-dev -y
+
+      - name: Build
+        run: CGO_ENABLED=1 GOOS=${{matrix.os}} GOARCH=${{matrix.arch}} go build -o dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}}  *.go
