@@ -21,12 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: 
-          - '{"name": "linux", "arch": "amd64"}' 
-          - '{"name": "darwin", "arch": "amd64"}'
-          - '{"name": "darwin", "arch": "arm64"}'
-          - '{"name": "windows", "arch": "amd64"}'
-          - '{"name": "windows", "arch": "arm64"}'
+        os: [linux, windows, darwin]
+        arch: [amd64, arm64, 386]
+        exclude: 
+          - os: darwin
+            arch: 386
     steps:
     - uses: actions/checkout@v4
     - name: Set up Go
@@ -34,18 +33,10 @@ jobs:
       with:
         go-version: '1.23'
      
-    - name: setup vars
-      run: |
-        echo "GOOS=$(echo '${{ matrix.os}}' | jq ".name")" >> $GITHUB_ENV
-        echo "GOARCH=$(echo '${{ matrix.os}}' | jq ".arch")" >> $GITHUB_ENV
-        
-    - name: check vars
-      run: |
-        echo $GOOS
-        echo $GOARCH        
+              
 
     - name: Build
-      run: go build -v ./...
+      run: GOOS=${{matrix.os}} GOARCH=${{matrix.arch}} go build -o main-${{matrix.os}}-${{matrix.arch}} -v ./...
 
     #- name: Test
     #  run: go test -v ./...
