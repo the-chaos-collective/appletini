@@ -8,43 +8,34 @@ on:
     branches:
       - DarVoid-patch-1
     tags:
-      - 'v*'
-     
+      - "v*"
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
   example_matrix:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [linux, windows, darwin]
+        os: [linux]
         arch: [amd64, arm64, 386]
-        exclude: 
-          - os: linux
-            arch: arm64
-          - os: windows
-            arch: arm64
-          - os: darwin
-            arch: 386
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.23'
-     
-    - name: Deps
-      run: |
-        go mod tidy
-        sudo apt install gcc -y
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
 
-    - name: Build
-      run: CGO_ENABLED=1 GOOS=${{matrix.os}} GOARCH=${{matrix.arch}} go build -o main-${{matrix.os}}-${{matrix.arch}}  *.go
+      - name: Deps
+        run: |
+          go mod tidy
+          sudo apt install gcc libgl1-mesa-dev xorg-dev -y
+
+      - name: Build
+        run: CGO_ENABLED=1 GOOS=${{matrix.os}} GOARCH=${{matrix.arch}} go build -o main-${{matrix.os}}-${{matrix.arch}}  *.go
 
     #- name: Test
     #  run: go test -v ./...
