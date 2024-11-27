@@ -4,29 +4,25 @@
     "token": "GITHUB_ACCESS_TOKEN"
   },
   "poll": {
-    "frequencySeconds": 10
+    "frequencySeconds": 30
   },
   "tracking":{
     "byLabel":[
       {
-        "title": "",
-        "label": "",
-        "repo": "",
-        "owner": ""
+        "title": "Appletini Bugs",
+        "label": "bug",
+        "repo": "appletini",
+        "owner": "the-chaos-collective"
       }
     ],
     "byRepo":[
       {
-        "title": "",
-        "repo": "",
-        "owner": ""
+        "title": "Appletini",
+        "repo": "appletini",
+        "owner": "the-chaos-collective"
       }
-
-    ],
-    "projects":[
-
     ]
   },
-  "darkMode": true,
-  "itemCount": 12
+  "darkMode": false,
+  "itemCount": 10
 }
