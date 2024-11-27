@@ -39,7 +39,7 @@ jobs:
         with:
           path: |
             dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
-          upload-release-files: startsWith(github.ref, 'refs/tags/v')
+          upload-release-files: ${{ startsWith(github.ref, 'refs/tags/v') }}
           release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/v0.0.1
   bob-janelas:
     runs-on: ubuntu-latest
@@ -68,7 +68,7 @@ jobs:
         with:
           path: |
             dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
-          upload-release-files: startsWith(github.ref, 'refs/tags/v')
+          upload-release-files: ${{ startsWith(github.ref, 'refs/tags/v') }}
           release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/v0.0.1
 
   mc-bob:
@@ -97,7 +97,7 @@ jobs:
         with:
           path: |
             dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
-          upload-release-files: startsWith(github.ref, 'refs/tags/v')
+          upload-release-files: ${{ startsWith(github.ref, 'refs/tags/v') }}
           release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/v0.0.1
   mc-old-bob:
     runs-on: macos-13
@@ -125,5 +125,5 @@ jobs:
         with:
           path: |
             dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
-          upload-release-files: startsWith(github.ref, 'refs/tags/v')
+          upload-release-files: ${{ startsWith(github.ref, 'refs/tags/v') }}
           release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/v0.0.1 
