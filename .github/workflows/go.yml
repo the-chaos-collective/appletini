@@ -58,7 +58,6 @@ jobs:
       - name: Deps
         run: |
           go mod tidy
-          brew install gcc
 
       - name: Build
         run: CGO_ENABLED=1 GOOS=${{matrix.os}} GOARCH=${{matrix.arch}} go build -o main-${{matrix.os}}-${{matrix.arch}}  *.go
