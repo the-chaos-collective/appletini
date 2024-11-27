@@ -36,8 +36,8 @@ jobs:
         go-version: '1.20'
     - name: setup vars
       run: |
-        echo ${{ matrix.os}} | jq ".name" >> GOOS
-        echo ${{ matrix.os}} | jq ".arch" >> GOARCH
+        echo "${{ matrix.os}}" | jq ".name" >> GOOS
+        echo "${{ matrix.os}}" | jq ".arch" >> GOARCH
         - name: setup vars
     - name: check vars
       run: |
