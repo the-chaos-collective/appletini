@@ -32,7 +32,7 @@ jobs:
       - name: Deps
         run: |
           go mod tidy
-          sudo apt install gcc libgl1-mesa-dev xorg-dev -y
+          sudo apt install gcc gcc-multilib libgl1-mesa-dev xorg-dev -y
 
       - name: Build
         run: CGO_ENABLED=1 GOOS=${{matrix.os}} GOARCH=${{matrix.arch}} go build -o main-${{matrix.os}}-${{matrix.arch}}  *.go
