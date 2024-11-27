@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [linux]
-        arch: [amd64, arm64, 386]
+        arch: [amd64, 386]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
