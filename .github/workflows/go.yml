@@ -35,7 +35,13 @@ jobs:
           sudo apt install gcc gcc-multilib libgl1-mesa-dev xorg-dev -y
 
       - name: Build
-        run: CGO_ENABLED=1 GOOS=${{matrix.os}} GOARCH=${{matrix.arch}} go build -o main-${{matrix.os}}-${{matrix.arch}}  *.go
-
+        run: CGO_ENABLED=1 GOOS=${{matrix.os}} GOARCH=${{matrix.arch}} go build -o dist/appletini-${{matrix.os}}-${{matrix.arch}}  *.go
+     
+      - name: Gib Artifact pls
+        uses: actions/upload-artifact@v3
+        with: 
+          name: appletini-${{matrix.os}}-${{matrix.arch}}
+          path: dist/appletini-${{matrix.os}}-${{matrix.arch}}
+          if-no-files-found: error
     #- name: Test
     #  run: go test -v ./...
