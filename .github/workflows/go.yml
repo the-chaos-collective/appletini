@@ -1,7 +1,4 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: multi build
+name: Cross build
 
 on:
   push:
@@ -39,8 +36,8 @@ jobs:
         with:
           path: |
             dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
-          upload-release-files: true
-          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/v0.0.1
+          upload-release-files: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/${{github.ref_name}} 
   bob-janelas:
     runs-on: ubuntu-latest
     strategy:
@@ -69,7 +66,7 @@ jobs:
           path: |
             dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           upload-release-files: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/v0.0.1
+          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/${{github.ref_name}}
 
   mc-bob:
     runs-on: macos-latest
@@ -98,7 +95,7 @@ jobs:
           path: |
             dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           upload-release-files: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/v0.0.1
+          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/${{github.ref_name}}
   mc-old-bob:
     runs-on: macos-13
     strategy:
@@ -126,4 +123,4 @@ jobs:
           path: |
             dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           upload-release-files: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/v0.0.1 
+          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/${{github.ref_name}}
