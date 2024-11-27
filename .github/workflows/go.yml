@@ -48,8 +48,8 @@ jobs:
         echo $GOOS
         echo $GOARCH        
 
-   # - name: Build
-    #  run: GOOS=${{  }};GOARCH=${{ echo matrix.os | jq ".arch"}} go build -v ./...
+    - name: Build
+      run: GOOS=$GOOS;GOARCH=$GOARCH go build -v ./...
 
     #- name: Test
     #  run: go test -v ./...
