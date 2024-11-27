@@ -33,10 +33,12 @@ jobs:
       with:
         go-version: '1.23'
      
-              
+    - name: Deps
+      run: |
+        go mod tidy
 
     - name: Build
-      run: GOOS=${{matrix.os}} GOARCH=${{matrix.arch}} go build -o main-${{matrix.os}}-${{matrix.arch}} -v ./...
+      run: GOOS=${{matrix.os}} GOARCH=${{matrix.arch}} go build -o main-${{matrix.os}}-${{matrix.arch}}  *.go
 
     #- name: Test
     #  run: go test -v ./...
