@@ -46,7 +46,7 @@ jobs:
           path: |
             dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           upload-release-files: true
-          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/${{github.ref_name}} 
+          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/v0.0.1
   bob-janelas:
     runs-on: ubuntu-latest
     strategy:
@@ -81,7 +81,7 @@ jobs:
           path: |
             dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           upload-release-files: true
-          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/${{github.ref_name}} 
+          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/v0.0.1
 
   mc-bob:
     runs-on: macos-latest
@@ -116,7 +116,7 @@ jobs:
           path: |
             dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           upload-release-files: true
-          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/${{github.ref_name}} 
+          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/v0.0.1
   mc-old-bob:
     runs-on: macos-13
     strategy:
@@ -150,4 +150,4 @@ jobs:
           path: |
             dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           upload-release-files: true
-          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/${{github.ref_name}} 
+          release-upload-url: https://github.com/the-chaos-collective/appletini/releases/tag/v0.0.1 
