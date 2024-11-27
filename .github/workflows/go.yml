@@ -5,6 +5,10 @@ name: Go
 
 on:
   push:
+    branches:
+      - DarVoid-patch-1
+    
+  push:
      tags:
       - 'v*'
      
