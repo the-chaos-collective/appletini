@@ -34,9 +34,6 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.23'
-    - name: install jq
-      run: |
-        sudo apt install jq
      
     - name: setup vars
       run: |
@@ -49,7 +46,7 @@ jobs:
         echo $GOARCH        
 
     - name: Build
-      run: GOOS=$GOOS;GOARCH=$GOARCH go build -v ./...
+      run: go build -v ./...
 
     #- name: Test
     #  run: go test -v ./...
