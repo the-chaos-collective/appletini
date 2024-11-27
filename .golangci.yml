@@ -2,10 +2,8 @@ linters:
   enable:
     - gofmt
     - govet
-    - golines
     - gocritic
     - goimports
-    - prevent_unmaintained_packages
     - errcheck
     - unused
     - misspell
