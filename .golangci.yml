@@ -1,5 +1,17 @@
 linters:
-  enable-all: true
+  enable:
+    - gofmt
+    - govet
+    - golines
+    - gocritic
+    - goimports
+    - prevent_unmaintained_packages
+    - errcheck
+    - unused
+    - misspell
+    - dupl
+    - dupword
+    - nestif
   disable:
     - funlen
     - gofumpt
