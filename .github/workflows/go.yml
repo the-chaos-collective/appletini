@@ -41,6 +41,7 @@ jobs:
           path: dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           if-no-files-found: error
       - name: Upload artifacts and release assets
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: nanoufo/action-upload-artifacts-and-release-assets@v2
         with:
           path: |
@@ -76,6 +77,7 @@ jobs:
           path: dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           if-no-files-found: error
       - name: Upload artifacts and release assets
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: nanoufo/action-upload-artifacts-and-release-assets@v2
         with:
           path: |
@@ -111,6 +113,7 @@ jobs:
           path: dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           if-no-files-found: error
       - name: Upload artifacts and release assets
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: nanoufo/action-upload-artifacts-and-release-assets@v2
         with:
           path: |
@@ -145,6 +148,7 @@ jobs:
           path: dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}} 
           if-no-files-found: error
       - name: Upload artifacts and release assets
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: nanoufo/action-upload-artifacts-and-release-assets@v2
         with:
           path: |
