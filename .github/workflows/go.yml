@@ -8,7 +8,6 @@ on:
     branches:
       - DarVoid-patch-1
     
-  push:
      tags:
       - 'v*'
      
