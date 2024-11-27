@@ -40,8 +40,8 @@ jobs:
      
     - name: setup vars
       run: |
-        echo "GOOS=$(echo "${{ matrix.os}}" | jq ".name")" >> $GITHUB_ENV
-        echo "GOARCH=$(echo "${{ matrix.os}}" | jq ".arch")" >> $GITHUB_ENV
+        echo "GOOS=$(echo '${{ matrix.os}}' | jq ".name")" >> $GITHUB_ENV
+        echo "GOARCH=$(echo '${{ matrix.os}}' | jq ".arch")" >> $GITHUB_ENV
         
     - name: check vars
       run: |
