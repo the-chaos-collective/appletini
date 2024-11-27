@@ -1,15 +1,12 @@
 package main
 
 import (
-	"net/http"
 
 	"git_applet/gitter"
 	"git_applet/queries"
 	"git_applet/types"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/driver/desktop"
-	"fyne.io/systray"
 )
 
 // global and default stuff.
