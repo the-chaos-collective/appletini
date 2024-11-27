@@ -20,6 +20,7 @@ jobs:
   example_matrix:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         os: [linux, windows, darwin]
         arch: [amd64, arm64, 386]
