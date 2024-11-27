@@ -1,4 +1,5 @@
 # Appletini
+[![Build Status](https://github.com/the-chaos-collective/appletini/actions/workflows/build-check.yml/badge.svg)](https://github.com/the-chaos-collective/appletini/actions/workflows/build-check.yml)
 
 Appletini is a GitHub client that runs in your systray.
 
