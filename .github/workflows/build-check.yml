@@ -2,11 +2,13 @@ name: Build
 
 on:
   pull_request:
-    types: [ opened, edited, synchronize ]
+    types: [opened, edited, synchronize]
 
 permissions:
   contents: write
-  
+  pull-requests: read
+  checks: write
+
 jobs:
   linux-amd64:
     runs-on: ubuntu-latest
@@ -16,7 +18,7 @@ jobs:
         arch: [amd64]
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
@@ -27,6 +29,11 @@ jobs:
           go mod tidy
           go fmt ./...
           sudo apt install gcc gcc-multilib libgl1-mesa-dev xorg-dev -y
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.60
 
       - name: Build
         run: CGO_ENABLED=1 GOOS=${{matrix.os}} GOARCH=${{matrix.arch}} go build -o dist/appletini-${{matrix.os}}-${{matrix.arch}}_${{github.ref_name}}  *.go
