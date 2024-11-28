@@ -14,7 +14,6 @@ linters:
     - exhaustive
     - godox
     - gosec
-    - gofumpt
   disable:
     - funlen
     - gci
