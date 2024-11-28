@@ -102,12 +102,7 @@ func pollPRs(prs chan<- map[string][]gitter.PullRequest) {
 			log.Printf("when polling for PRs: %v", err)
 		}
 
-		hashCheck(func(hash string) {
-			if hash != currentHash {
-				currentHash = hash
-				prs <- trackedPrs
-			}
-		})
+		hashCheck(trackedPrs, prs)
 
 		time.Sleep(getPollDuration())
 	}
