@@ -14,7 +14,6 @@ import (
 	"git_applet/queries/repo"
 )
 
-
 func setupPersonalQuery() (queries.Query, error) {
 	personalQuery := personal.PersonalQuery{}
 
