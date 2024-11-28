@@ -1,6 +1,5 @@
 linters:
   enable:
-    - gofmt
     - govet
     - gocritic
     - goimports
@@ -19,6 +18,13 @@ linters:
     - funlen
     - gofumpt
     - gci
+
+severity:
+  default-severity: error
+  rules:
+    - linters:
+        - godox
+      severity: warning
 
 linters-settings:
   depguard:
