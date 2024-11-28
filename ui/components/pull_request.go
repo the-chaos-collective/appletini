@@ -2,8 +2,9 @@ package components
 
 import (
 	"fmt"
-	"git_applet/ui"
 	"strings"
+
+	"git_applet/ui"
 )
 
 type PullRequest struct {
@@ -24,25 +25,31 @@ type Status struct {
 
 var statusMap map[Status]func(PullRequest) string = map[Status]func(PullRequest) string{
 	{Mergeable: "MERGEABLE", ReviewDecision: "APPROVED"}: func(pr PullRequest) string {
-		return "Go ahead, merge it. I'm sure it's fine"
+		return "Ready to merge"
 	},
 	{Mergeable: "MERGEABLE", ReviewDecision: "CHANGES_REQUESTED"}: func(pr PullRequest) string {
-		return "Go make your team happy"
+		return "Changes requested"
 	},
 	{Mergeable: "MERGEABLE", ReviewDecision: "REVIEW_REQUIRED"}: func(pr PullRequest) string {
-		return "Go ask for reviews"
+		return "Requires review"
 	},
 	{Mergeable: "CONFLICTING", ReviewDecision: "APPROVED"}: func(pr PullRequest) string {
-		return "Git doesn't like you"
+		return "Conflict"
+	},
+	{Mergeable: "MERGEABLE", ReviewDecision: ""}: func(pr PullRequest) string {
+		return "Requires review"
+	},
+	{Mergeable: "CONFLICTING", ReviewDecision: ""}: func(pr PullRequest) string {
+		return "Conflict"
 	},
 	{Mergeable: "CONFLICTING", ReviewDecision: "CHANGES_REQUESTED"}: func(pr PullRequest) string {
-		return "Nothing works, just give up"
+		return "Conflict & Changes requested"
 	},
 	{Mergeable: "UNKWNOWN", ReviewDecision: "APPROVED"}: func(pr PullRequest) string {
-		return "Bro, your PR is cooked"
+		return "Approved"
 	},
 	{Mergeable: "UNKWNOWN", ReviewDecision: "CHANGES_REQUESTED"}: func(pr PullRequest) string {
-		return "The dog is dead but we can keep working on it"
+		return "Changes requested"
 	},
 }
 
