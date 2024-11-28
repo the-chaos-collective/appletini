@@ -15,11 +15,6 @@ import (
 	"git_applet/queries/repo"
 )
 
-func setupMockQuery() (queries.Query, error) {
-	mockQuery := mock.MockQuery{}
-
-	return mockQuery, nil
-}
 
 func setupPersonalQuery() (queries.Query, error) {
 	personalQuery := personal.PersonalQuery{}
