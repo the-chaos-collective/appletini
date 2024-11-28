@@ -5,8 +5,6 @@ import (
 	"git_applet/gitter"
 	"git_applet/queries"
 	"git_applet/types"
-
-	"fyne.io/fyne/v2"
 )
 
 // global and default stuff.
