@@ -24,7 +24,6 @@ type IndexPage struct {
 }
 
 func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {
-
 	result := make([]ui.Itemable, 0, 5) // separator + quit button + 3 tracking types by default
 	for key, value := range prs {
 		prList := make([]ui.Itemable, 0, 1) // at least one pr
@@ -92,7 +91,6 @@ func (page IndexPage) run() {
 }
 
 func (page IndexPage) Run() {
-
 	var icon fyne.Resource
 	if page.Darkmode {
 		icon = icons.ResIconDefault
