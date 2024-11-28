@@ -20,9 +20,3 @@ var (
 
 	queryAggregator queries.Query
 )
-
-// visual stuff.
-var (
-	trackingMenuMap map[string]*fyne.MenuItem
-)
-
