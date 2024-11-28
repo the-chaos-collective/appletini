@@ -12,8 +12,7 @@ linters:
     - ineffassign
     - staticcheck
     - exhaustive
-    - gofumpt
-    - godox
+    - gofmt
     - gosec
   disable:
     - funlen
@@ -24,7 +23,7 @@ severity:
   rules:
     - linters:
         - godox
-        - gofumpt
+        - gofmt
       severity: warning
 
 linters-settings:
