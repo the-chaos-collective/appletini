@@ -97,12 +97,12 @@ func getCurrentAccessToken() string {
 
 func pollPRs(prs chan<- map[string][]gitter.PullRequest) {
 	for {
-		trackedPrs, err := queryAggregator.GetAll(gqlClient)
+		trackingPrs, err := queryAggregator.GetAll(gqlClient)
 		if err != nil {
 			log.Printf("when polling for PRs: %v", err)
 		}
 
-		hashCheck(trackedPrs, prs)
+		hashCheck(trackingPrs, prs)
 
 		time.Sleep(getPollDuration())
 	}
