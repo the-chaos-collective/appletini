@@ -12,6 +12,8 @@ linters:
     - ineffassign
     - staticcheck
     - exhaustive
+    - gofumpt
+    - godox
     - gosec
   disable:
     - funlen
