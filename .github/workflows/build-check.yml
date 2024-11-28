@@ -39,6 +39,12 @@ jobs:
         with:
           go-version: "1.23"
 
+      - name: Deps
+        run: |
+          go mod tidy
+          go fmt ./...
+          sudo apt install gcc gcc-multilib libgl1-mesa-dev xorg-dev -y
+
       - name: Lint
         uses: golangci/golangci-lint-action@v6
         with:
