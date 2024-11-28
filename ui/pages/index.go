@@ -93,7 +93,7 @@ func (page IndexPage) run() {
 
 func (page IndexPage) Run() {
 
-	icon := fyne.Resource(DefaultIcon{})
+	var icon fyne.Resource
 	if page.Darkmode {
 		icon = icons.ResIconDefault
 	} else {
