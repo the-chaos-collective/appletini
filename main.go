@@ -11,6 +11,7 @@ func main() {
 	err := loadConfig()
 	ehp(err)
 
+	logger = *log.Default()
 	gqlClient = gitter.GraphQLClient{
 		Url:   Config.Github.GraphQL,
 		Token: getCurrentAccessToken(),
