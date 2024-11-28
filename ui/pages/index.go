@@ -2,16 +2,15 @@ package pages
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"strconv"
-	"strings"
-
 	"git_applet/gitter"
 	"git_applet/types"
 	"git_applet/ui"
 	"git_applet/ui/components"
 	"git_applet/ui/icons"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 
 	"fyne.io/fyne/v2"
 )

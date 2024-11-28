@@ -1,10 +1,9 @@
 package components
 
 import (
-	"log"
-
 	"git_applet/actions"
 	"git_applet/ui"
+	"log"
 )
 
 type PullRequestOptions struct {

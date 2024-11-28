@@ -2,16 +2,15 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"time"
-
 	"git_applet/gitter"
 	"git_applet/queries"
 	"git_applet/queries/aggregator"
 	"git_applet/queries/labeled"
 	"git_applet/queries/personal"
 	"git_applet/queries/repo"
+	"log"
+	"os"
+	"time"
 )
 
 func setupPersonalQuery() (queries.Query, error) {

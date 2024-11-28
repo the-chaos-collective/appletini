@@ -2,9 +2,8 @@ package repo
 
 import (
 	"fmt"
-	"strings"
-
 	"git_applet/gitter"
+	"strings"
 )
 
 type Result map[string]struct {

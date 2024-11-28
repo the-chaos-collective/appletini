@@ -2,7 +2,6 @@ package personal
 
 import (
 	"fmt"
-
 	"git_applet/gitter"
 )
 

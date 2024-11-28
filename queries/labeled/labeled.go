@@ -2,9 +2,8 @@ package labeled
 
 import (
 	"fmt"
-	"strings"
-
 	"git_applet/gitter"
+	"strings"
 )
 
 type LabeledResult map[string]LabelMap
