@@ -10,7 +10,6 @@ import (
 	"git_applet/queries"
 	"git_applet/queries/aggregator"
 	"git_applet/queries/labeled"
-	"git_applet/queries/mock"
 	"git_applet/queries/personal"
 	"git_applet/queries/repo"
 )
