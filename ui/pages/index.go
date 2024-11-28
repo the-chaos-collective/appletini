@@ -2,16 +2,15 @@ package pages
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"strconv"
-	"strings"
-
 	"git_applet/gitter"
 	"git_applet/types"
 	"git_applet/ui"
 	"git_applet/ui/components"
 	"git_applet/ui/icons"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 
 	"fyne.io/fyne/v2"
 )
@@ -24,7 +23,6 @@ type IndexPage struct {
 }
 
 func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {
-
 	result := make([]ui.Itemable, 0, 5) // separator + quit button + 3 tracking types by default
 	for key, value := range prs {
 		prList := make([]ui.Itemable, 0, 1) // at least one pr
@@ -92,8 +90,7 @@ func (page IndexPage) run() {
 }
 
 func (page IndexPage) Run() {
-
-	icon := fyne.Resource(DefaultIcon{})
+	var icon fyne.Resource
 	if page.Darkmode {
 		icon = icons.ResIconDefault
 	} else {

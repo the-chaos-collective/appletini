@@ -1,10 +1,9 @@
 package components
 
 import (
-	"log"
-
 	"git_applet/actions"
 	"git_applet/ui"
+	"log"
 )
 
 type PullRequestOptions struct {
@@ -22,7 +21,7 @@ func (box PullRequestOptions) Build() ui.SystrayMenu {
 				Action: func() {
 					err := actions.OpenLink(box.Permalink)
 					if err != nil {
-						log.Fatalf("error opening tracked PR in browser: %w", err)
+						log.Fatalf("error opening tracked PR in browser: %v", err)
 					}
 				},
 			},

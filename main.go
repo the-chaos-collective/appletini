@@ -2,10 +2,9 @@ package main
 
 import (
 	_ "embed"
-	"log"
-
 	"git_applet/gitter"
 	"git_applet/ui/pages"
+	"log"
 )
 
 func main() {

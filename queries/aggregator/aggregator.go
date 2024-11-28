@@ -1,11 +1,10 @@
 package aggregator
 
 import (
-	"log"
-	"maps"
-
 	"git_applet/gitter"
 	"git_applet/queries/mock"
+	"log"
+	"maps"
 )
 
 func (qa QueryAggregator) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {

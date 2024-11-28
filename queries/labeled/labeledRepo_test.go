@@ -2,9 +2,8 @@ package labeled_test
 
 import (
 	"errors"
-	"testing"
-
 	"git_applet/queries/labeled"
+	"testing"
 )
 
 type testConfig struct {

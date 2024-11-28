@@ -1,9 +1,30 @@
 linters:
-  enable-all: true
+  enable:
+    - govet
+    - gocritic
+    - goimports
+    - errcheck
+    - unused
+    - misspell
+    - dupl
+    - dupword
+    - nestif
+    - ineffassign
+    - staticcheck
+    - exhaustive
+    - gofmt
+    - gosec
   disable:
     - funlen
-    - gofumpt
     - gci
+
+severity:
+  default-severity: error
+  rules:
+    - linters:
+        - godox
+        - gofmt
+      severity: warning
 
 linters-settings:
   depguard:

@@ -2,9 +2,8 @@ package components
 
 import (
 	"fmt"
-	"strings"
-
 	"git_applet/ui"
+	"strings"
 )
 
 type PullRequest struct {

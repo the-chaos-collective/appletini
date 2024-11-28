@@ -29,10 +29,8 @@ func (systray *Systray) createApp() {
 	desk.SetSystemTrayMenu(systray.MainMenu.fyneMenu)
 
 	(*systray.fyneApp).Lifecycle().SetOnStarted(func() {
-
 		// set default icon on main menu
 		desk.SetSystemTrayIcon(systray.icon)
-
 	})
 }
 
@@ -63,7 +61,6 @@ func (systray Systray) Run() {
 	(*systray.fyneApp).Run()
 }
 
-// TODO: Only update if something changed (hashing)
 func (menu *SystrayMenu) sync() {
 	menu.fyneMenu.Items = []*fyne.MenuItem{}
 

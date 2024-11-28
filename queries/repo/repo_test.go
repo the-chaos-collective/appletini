@@ -2,9 +2,8 @@ package repo_test
 
 import (
 	"errors"
-	"testing"
-
 	"git_applet/queries/repo"
+	"testing"
 )
 
 type testConfig struct {
