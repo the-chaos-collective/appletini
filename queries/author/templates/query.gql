@@ -1,0 +1,54 @@
+{{ if .Trackers }}
+query PRs {
+  {{ range $_, $tracker := .Trackers }}
+    {{ range $author_id, $author := $tracker.Authors }}
+      {{ $tracker.Id }}_{{ $author_id }}: search(query: "repo:{{ $tracker.Owner }}/{{ $tracker.Repo }} is:open type:pr author:{{ $author }}", type: ISSUE, first: {{$.PrAmount}}) {
+        nodes {
+          __typename
+          ... on PullRequest {
+            ...getPullRequest
+          }
+        }
+      }
+    {{ end }}
+  {{ end }}
+}
+
+fragment getPullRequest on PullRequest {
+  id
+  title
+  url
+  baseRefName
+  headRefName 
+  reviewRequests {
+    totalCount
+  }
+  reviewDecision
+  createdAt
+  permalink
+  mergeable
+  state
+  ...getReviewer
+}
+
+fragment getReviewer on PullRequest {
+  reviews(first: {{ .ReviewAmount }}) {
+    edges {
+      node {
+        state
+        body
+        comments(first: {{ .CommentsAmount }}) {
+          edges {
+            node {
+              body
+            }
+          }
+        }
+        author {
+          login
+        }
+      }
+    }
+  }
+}
+{{ end }}

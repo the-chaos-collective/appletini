@@ -2,15 +2,17 @@ package main
 
 import (
 	"fmt"
-	"git_applet/gitter"
-	"git_applet/queries"
-	"git_applet/queries/aggregator"
-	"git_applet/queries/labeled"
-	"git_applet/queries/personal"
-	"git_applet/queries/repo"
 	"log"
 	"os"
 	"time"
+
+	"git_applet/gitter"
+	"git_applet/queries"
+	"git_applet/queries/aggregator"
+	"git_applet/queries/author"
+	"git_applet/queries/labeled"
+	"git_applet/queries/personal"
+	"git_applet/queries/repo"
 )
 
 func setupPersonalQuery() (queries.Query, error) {
@@ -58,6 +60,26 @@ func setupRepoQuery() (queries.Query, error) {
 	})
 }
 
+func setupAuthorQuery() (queries.Query, error) {
+	trackers := []author.Tracker{}
+	for idx, tracker := range Config.Tracking.ByAuthor {
+		trackers = append(trackers, author.Tracker{
+			Id:      fmt.Sprintf("author_%d", idx),
+			Title:   tracker.Title,
+			Owner:   tracker.Owner,
+			Repo:    tracker.RepoName,
+			Authors: tracker.Authors,
+		})
+	}
+
+	return author.MakeQuery(author.Config{
+		Trackers:       trackers,
+		PrAmount:       Config.ItemCount,
+		ReviewAmount:   10,
+		CommentsAmount: 10,
+	})
+}
+
 func setupPolling(mock bool) error {
 	personal, err := setupPersonalQuery()
 	if err != nil {
@@ -74,11 +96,17 @@ func setupPolling(mock bool) error {
 		return fmt.Errorf("setting up polling: %w", err)
 	}
 
+	author, err := setupAuthorQuery()
+	if err != nil {
+		return fmt.Errorf("setting up polling: %w", err)
+	}
+
 	queryAggregator = aggregator.QueryAggregator{
 		Queries: []queries.Query{
 			personal,
 			labeled,
 			repo,
+			author,
 		},
 
 		Mock: mock,
