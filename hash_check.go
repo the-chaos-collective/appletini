@@ -12,8 +12,8 @@ func hashCheck(currentHash *string, prMap map[string][]gitter.PullRequest, prCha
 	h.Write([]byte(fmt.Sprintf("%v", prMap)))
 	newHash := fmt.Sprintf("%x", h.Sum(nil))
 	logger.Printf("HASH: %v", newHash)
-	if currentHash != &newHash {
-		currentHash = &newHash
+	if *currentHash != newHash {
+		*currentHash = newHash
 		prChannel <- prMap
 	}
 }
