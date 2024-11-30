@@ -21,6 +21,17 @@
         "repo": "appletini",
         "owner": "the-chaos-collective"
       }
+    ],
+    "byAuthor":[
+      {
+        "title": "That Guy's",
+        "authors": [
+          "darvoid",
+          "tobyselway"
+        ],
+        "repo": "appletini",
+        "owner": "the-chaos-collective"
+      }
     ]
   },
   "darkMode": false,

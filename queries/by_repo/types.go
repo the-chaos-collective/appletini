@@ -1,7 +1,8 @@
-package labeled
+package by_repo
 
-type LabeledQuery struct {
-	generatedQuery string
+type Query struct {
+	shouldBeExecuted bool
+	generatedQuery   string
 }
 
 type Config struct {
@@ -13,7 +14,6 @@ type Config struct {
 
 type Tracker struct {
 	Id    string
-	Label string
 	Repo  string
 	Owner string
 	Title string

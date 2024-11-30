@@ -17,33 +17,36 @@ type PollConfig struct {
 	Frequency int `json:"frequencySeconds"`
 }
 type Tracking struct {
-	ByLabel        LabeledRepoSet `json:"byLabel"`
-	ByRepo         RepoSet        `json:"byRepo"`
-	Projects       ProjectSet     `json:"projects"`
-	CommentsAmount string         `json:"commentsAmount"`
-	ReviewAmount   string         `json:"reviewAmount"`
-	PrAmount       string         `json:"prAmount"`
+	ByLabel        LabeledSet `json:"byLabel"`
+	ByRepo         RepoSet    `json:"byRepo"`
+	ByAuthor       AuthorSet  `json:"byAuthor"`
+	CommentsAmount string     `json:"commentsAmount"`
+	ReviewAmount   string     `json:"reviewAmount"`
+	PrAmount       string     `json:"prAmount"`
 }
-type LabeledRepo struct {
+
+type Author struct {
+	Title    string   `json:"title"`
+	Owner    string   `json:"owner"`
+	RepoName string   `json:"repo"`
+	Authors  []string `json:"authors"`
+}
+
+type Labeled struct {
 	Title    string `json:"title"`
 	Owner    string `json:"owner"`
 	RepoName string `json:"repo"`
 	Label    string `json:"label"`
 }
+
 type Repo struct {
 	Title    string `json:"title"`
 	Owner    string `json:"owner"`
 	RepoName string `json:"repo"`
 }
 
-type Project struct {
-	Title    string `json:"title"`
-	Owner    string `json:"owner"`
-	RepoName string `json:"repo"`
-}
-
 type (
-	LabeledRepoSet []LabeledRepo
-	RepoSet        []Repo
-	ProjectSet     []Project
+	LabeledSet []Labeled
+	RepoSet    []Repo
+	AuthorSet  []Author
 )

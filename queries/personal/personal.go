@@ -2,6 +2,7 @@ package personal
 
 import (
 	"fmt"
+
 	"git_applet/gitter"
 )
 
@@ -55,10 +56,10 @@ var ViewerQuery = `query fetchPRs {
 			}
 			}`
 
-func (PersonalQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
-	res := PrResponse{}
+func (Query) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
+	res := Response{}
 
-	err := gitter.AuthorizedGraphQLQuery[PrResponse](client, ViewerQuery, &res)
+	err := gitter.AuthorizedGraphQLQuery[Response](client, ViewerQuery, &res)
 	if err != nil {
 		return map[string][]gitter.PullRequest{}, fmt.Errorf("requesting personal PRs: %w", err)
 	}

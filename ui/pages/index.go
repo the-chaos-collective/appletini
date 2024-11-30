@@ -2,15 +2,16 @@ package pages
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
+
 	"git_applet/gitter"
 	"git_applet/types"
 	"git_applet/ui"
 	"git_applet/ui/components"
 	"git_applet/ui/icons"
-	"log"
-	"os"
-	"strconv"
-	"strings"
 
 	"fyne.io/fyne/v2"
 )
@@ -53,8 +54,10 @@ func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemabl
 			switch trackerType {
 			case "repo":
 				groupTitle = page.Trackers.ByRepo[idx].Title
-			case "labeled":
+			case "label":
 				groupTitle = page.Trackers.ByLabel[idx].Title
+			case "author":
+				groupTitle = page.Trackers.ByAuthor[idx].Title
 			default:
 				groupTitle = fmt.Sprintf("Unsupported tracker type: %s", trackerType)
 			}

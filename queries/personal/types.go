@@ -1,3 +1,3 @@
 package personal
 
-type PersonalQuery struct{}
+type Query struct{}
