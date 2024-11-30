@@ -8,28 +8,28 @@ import (
 )
 
 func main() {
-	err := loadConfig()
+	config, err := loadConfig()
 	ehp(err)
 
 	logger = *log.Default()
 	gqlClient = gitter.GraphQLClient{
-		Url:   Config.Github.GraphQL,
-		Token: getCurrentAccessToken(),
+		Url:   config.Github.GraphQL,
+		Token: getCurrentAccessToken(config),
 	}
 
 	prs := make(chan map[string][]gitter.PullRequest)
 
 	indexPage := pages.IndexPage{
 		PullRequests: prs,
-		Darkmode:     Config.Darkmode,
-		Trackers:     Config.Tracking,
+		Darkmode:     config.Darkmode,
+		Trackers:     config.Tracking,
 	}
 
 	mockQueries := false
-	err = setupPolling(mockQueries)
+	err = setupPolling(config, mockQueries)
 	ehp(err)
 
-	go pollPRs(prs)
+	go pollPRs(config, prs)
 
 	indexPage.Run()
 }

@@ -4,7 +4,6 @@ go 1.23
 
 require (
 	fyne.io/fyne/v2 v2.4.3
-	github.com/ettle/strcase v0.2.0
 	github.com/machinebox/graphql v0.2.2
 )
 

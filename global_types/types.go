@@ -1,4 +1,4 @@
-package types
+package global_types
 
 type Config struct {
 	Github    GithubConfig `json:"github"`

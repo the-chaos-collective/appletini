@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"git_applet/gitter"
+	"git_applet/global_types"
 	"git_applet/queries"
 	"git_applet/queries/aggregator"
 	"git_applet/queries/by_author"
@@ -21,9 +22,9 @@ func setupPersonalQuery() (queries.Query, error) {
 	return personalQuery, nil
 }
 
-func setupLabelQuery() (queries.Query, error) {
+func setupLabelQuery(config global_types.Config) (queries.Query, error) {
 	trackers := []by_label.Tracker{}
-	for idx, tracker := range Config.Tracking.ByLabel {
+	for idx, tracker := range config.Tracking.ByLabel {
 		trackers = append(trackers, by_label.Tracker{
 			Id:    fmt.Sprintf("label_%d", idx),
 			Title: tracker.Title,
@@ -35,15 +36,15 @@ func setupLabelQuery() (queries.Query, error) {
 
 	return by_label.MakeQuery(by_label.Config{
 		Trackers:       trackers,
-		PrAmount:       Config.ItemCount,
+		PrAmount:       config.ItemCount,
 		ReviewAmount:   10,
 		CommentsAmount: 10,
 	})
 }
 
-func setupRepoQuery() (queries.Query, error) {
+func setupRepoQuery(config global_types.Config) (queries.Query, error) {
 	trackers := []by_repo.Tracker{}
-	for idx, tracker := range Config.Tracking.ByRepo {
+	for idx, tracker := range config.Tracking.ByRepo {
 		trackers = append(trackers, by_repo.Tracker{
 			Id:    fmt.Sprintf("repo_%d", idx),
 			Title: tracker.Title,
@@ -54,15 +55,15 @@ func setupRepoQuery() (queries.Query, error) {
 
 	return by_repo.MakeQuery(by_repo.Config{
 		Trackers:       trackers,
-		PrAmount:       Config.ItemCount,
+		PrAmount:       config.ItemCount,
 		ReviewAmount:   10,
 		CommentsAmount: 10,
 	})
 }
 
-func setupAuthorQuery() (queries.Query, error) {
+func setupAuthorQuery(config global_types.Config) (queries.Query, error) {
 	trackers := []by_author.Tracker{}
-	for idx, tracker := range Config.Tracking.ByAuthor {
+	for idx, tracker := range config.Tracking.ByAuthor {
 		trackers = append(trackers, by_author.Tracker{
 			Id:      fmt.Sprintf("author_%d", idx),
 			Title:   tracker.Title,
@@ -74,24 +75,24 @@ func setupAuthorQuery() (queries.Query, error) {
 
 	return by_author.MakeQuery(by_author.Config{
 		Trackers:       trackers,
-		PrAmount:       Config.ItemCount,
+		PrAmount:       config.ItemCount,
 		ReviewAmount:   10,
 		CommentsAmount: 10,
 	})
 }
 
-func setupPolling(mock bool) error {
-	labeled, err := setupLabelQuery()
+func setupPolling(config global_types.Config, mock bool) error {
+	labeled, err := setupLabelQuery(config)
 	if err != nil {
 		return fmt.Errorf("setting up label polling: %w", err)
 	}
 
-	repo, err := setupRepoQuery()
+	repo, err := setupRepoQuery(config)
 	if err != nil {
 		return fmt.Errorf("setting up repo polling: %w", err)
 	}
 
-	author, err := setupAuthorQuery()
+	author, err := setupAuthorQuery(config)
 	if err != nil {
 		return fmt.Errorf("setting up author polling: %w", err)
 	}
@@ -102,7 +103,7 @@ func setupPolling(mock bool) error {
 		author,
 	}
 
-	if Config.Tracking.Personal {
+	if config.Tracking.Personal {
 		personal, err := setupPersonalQuery()
 		if err != nil {
 			return fmt.Errorf("setting up personal polling: %w", err)
@@ -118,15 +119,15 @@ func setupPolling(mock bool) error {
 	return nil
 }
 
-func getCurrentAccessToken() string {
-	token, present := os.LookupEnv(Config.Github.Token)
+func getCurrentAccessToken(config global_types.Config) string {
+	token, present := os.LookupEnv(config.Github.Token)
 	if !present {
 		log.Fatal("token not present")
 	}
 	return token
 }
 
-func pollPRs(prs chan<- map[string][]gitter.PullRequest) {
+func pollPRs(config global_types.Config, prs chan<- map[string][]gitter.PullRequest) {
 	for {
 		trackingPrs, err := queryAggregator.GetAll(gqlClient)
 		if err != nil {
@@ -135,10 +136,10 @@ func pollPRs(prs chan<- map[string][]gitter.PullRequest) {
 
 		hashCheck(trackingPrs, prs)
 
-		time.Sleep(getPollDuration())
+		time.Sleep(getPollDuration(config))
 	}
 }
 
-func getPollDuration() time.Duration {
-	return time.Duration(Config.Poll.Frequency * int(time.Second))
+func getPollDuration(config global_types.Config) time.Duration {
+	return time.Duration(config.Poll.Frequency * int(time.Second))
 }
