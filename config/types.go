@@ -1,4 +1,4 @@
-package global_types
+package config
 
 type Config struct {
 	Github    GithubConfig `json:"github"`
@@ -16,6 +16,7 @@ type GithubConfig struct {
 type PollConfig struct {
 	Frequency int `json:"frequencySeconds"`
 }
+
 type Tracking struct {
 	Personal       bool       `json:"personal"`
 	ByLabel        LabeledSet `json:"byLabel"`

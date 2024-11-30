@@ -2,13 +2,15 @@ package main
 
 import (
 	_ "embed"
+	"log"
+
+	"git_applet/config"
 	"git_applet/gitter"
 	"git_applet/ui/pages"
-	"log"
 )
 
 func main() {
-	config, err := loadConfig()
+	config, err := config.Load(CONFIG_FILE)
 	ehp(err)
 
 	logger = *log.Default()

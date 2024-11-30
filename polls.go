@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
+	"git_applet/config"
 	"git_applet/gitter"
-	"git_applet/global_types"
 	"git_applet/queries"
 	"git_applet/queries/aggregator"
 	"git_applet/queries/by_author"
@@ -22,7 +22,7 @@ func setupPersonalQuery() (queries.Query, error) {
 	return personalQuery, nil
 }
 
-func setupLabelQuery(config global_types.Config) (queries.Query, error) {
+func setupLabelQuery(config config.Config) (queries.Query, error) {
 	trackers := []by_label.Tracker{}
 	for idx, tracker := range config.Tracking.ByLabel {
 		trackers = append(trackers, by_label.Tracker{
@@ -42,7 +42,7 @@ func setupLabelQuery(config global_types.Config) (queries.Query, error) {
 	})
 }
 
-func setupRepoQuery(config global_types.Config) (queries.Query, error) {
+func setupRepoQuery(config config.Config) (queries.Query, error) {
 	trackers := []by_repo.Tracker{}
 	for idx, tracker := range config.Tracking.ByRepo {
 		trackers = append(trackers, by_repo.Tracker{
@@ -61,7 +61,7 @@ func setupRepoQuery(config global_types.Config) (queries.Query, error) {
 	})
 }
 
-func setupAuthorQuery(config global_types.Config) (queries.Query, error) {
+func setupAuthorQuery(config config.Config) (queries.Query, error) {
 	trackers := []by_author.Tracker{}
 	for idx, tracker := range config.Tracking.ByAuthor {
 		trackers = append(trackers, by_author.Tracker{
@@ -81,7 +81,7 @@ func setupAuthorQuery(config global_types.Config) (queries.Query, error) {
 	})
 }
 
-func setupPolling(config global_types.Config, mock bool) error {
+func setupPolling(config config.Config, mock bool) error {
 	labeled, err := setupLabelQuery(config)
 	if err != nil {
 		return fmt.Errorf("setting up label polling: %w", err)
@@ -119,7 +119,7 @@ func setupPolling(config global_types.Config, mock bool) error {
 	return nil
 }
 
-func getCurrentAccessToken(config global_types.Config) string {
+func getCurrentAccessToken(config config.Config) string {
 	token, present := os.LookupEnv(config.Github.Token)
 	if !present {
 		log.Fatal("token not present")
@@ -127,7 +127,7 @@ func getCurrentAccessToken(config global_types.Config) string {
 	return token
 }
 
-func pollPRs(config global_types.Config, prs chan<- map[string][]gitter.PullRequest) {
+func pollPRs(config config.Config, prs chan<- map[string][]gitter.PullRequest) {
 	currentHash := ""
 	for {
 		trackingPrs, err := queryAggregator.GetAll(gqlClient)
@@ -141,6 +141,6 @@ func pollPRs(config global_types.Config, prs chan<- map[string][]gitter.PullRequ
 	}
 }
 
-func getPollDuration(config global_types.Config) time.Duration {
+func getPollDuration(config config.Config) time.Duration {
 	return time.Duration(config.Poll.Frequency * int(time.Second))
 }

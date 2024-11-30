@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"git_applet/config"
 	"git_applet/gitter"
-	"git_applet/global_types"
 	"git_applet/ui"
 	"git_applet/ui/components"
 	"git_applet/ui/icons"
@@ -20,7 +20,7 @@ type IndexPage struct {
 	systray      *ui.Systray
 	Darkmode     bool
 	PullRequests <-chan map[string][]gitter.PullRequest
-	Trackers     global_types.Tracking
+	Trackers     config.Tracking
 }
 
 func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {
