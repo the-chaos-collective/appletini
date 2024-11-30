@@ -6,8 +6,9 @@
   "poll": {
     "frequencySeconds": 30
   },
-  "tracking":{
-    "byLabel":[
+  "tracking": {
+    "personal": true,
+    "byLabel": [
       {
         "title": "Appletini Bugs",
         "label": "bug",
@@ -15,14 +16,14 @@
         "owner": "the-chaos-collective"
       }
     ],
-    "byRepo":[
+    "byRepo": [
       {
         "title": "Appletini",
         "repo": "appletini",
         "owner": "the-chaos-collective"
       }
     ],
-    "byAuthor":[
+    "byAuthor": [
       {
         "title": "That Guy's",
         "authors": [

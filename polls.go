@@ -81,11 +81,6 @@ func setupAuthorQuery() (queries.Query, error) {
 }
 
 func setupPolling(mock bool) error {
-	personal, err := setupPersonalQuery()
-	if err != nil {
-		return fmt.Errorf("setting up polling: %w", err)
-	}
-
 	labeled, err := setupLabelQuery()
 	if err != nil {
 		return fmt.Errorf("setting up polling: %w", err)
@@ -101,15 +96,23 @@ func setupPolling(mock bool) error {
 		return fmt.Errorf("setting up  author polling: %w", err)
 	}
 
-	queryAggregator = aggregator.QueryAggregator{
-		Queries: []queries.Query{
-			personal,
-			labeled,
-			repo,
-			author,
-		},
+	queries := []queries.Query{
+		labeled,
+		repo,
+		author,
+	}
 
-		Mock: mock,
+	if Config.Tracking.Personal {
+		personal, err := setupPersonalQuery()
+		if err != nil {
+			return fmt.Errorf("setting up polling: %w", err)
+		}
+		queries = append(queries, personal)
+	}
+
+	queryAggregator = aggregator.QueryAggregator{
+		Queries: queries,
+		Mock:    mock,
 	}
 
 	return nil

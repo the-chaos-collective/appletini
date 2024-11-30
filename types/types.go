@@ -17,6 +17,7 @@ type PollConfig struct {
 	Frequency int `json:"frequencySeconds"`
 }
 type Tracking struct {
+	Personal       bool       `json:"personal"`
 	ByLabel        LabeledSet `json:"byLabel"`
 	ByRepo         RepoSet    `json:"byRepo"`
 	ByAuthor       AuthorSet  `json:"byAuthor"`
