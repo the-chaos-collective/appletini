@@ -11,7 +11,6 @@ import (
 const CONFIG_FILE = "config.json"
 
 var (
-	currentHash     string = ""
 	gqlClient       gitter.GraphQLClient
 	logger          log.Logger
 	queryAggregator queries.Query
