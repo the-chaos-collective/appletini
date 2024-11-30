@@ -61,7 +61,7 @@ func (query Query) GetAll(client gitter.GraphQLClient) (map[string][]gitter.Pull
 	if strings.Trim(query.generatedQuery, "\n") != "" {
 		err := gitter.AuthorizedGraphQLQuery[Result](client, query.generatedQuery, &res)
 		if err != nil {
-			return map[string][]gitter.PullRequest{}, fmt.Errorf("requesting PRs: %w", err)
+			return map[string][]gitter.PullRequest{}, fmt.Errorf("author response failed: %w", err)
 		}
 	}
 
