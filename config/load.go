@@ -11,11 +11,18 @@ func Load(filename string) (Config, error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("reading config file: %w", err)
 	}
+
 	config := Config{}
+
 	err = json.Unmarshal(file_contents, &config)
 	if err != nil {
 		return Config{}, fmt.Errorf("unmarshaling config: %w", err)
 	}
-	// fmt.Printf("Config: %v\n", Config.Github.Token)
+
+	err = config.loadGithubToken()
+	if err != nil {
+		return Config{}, fmt.Errorf("loading GitHub token: %w", err)
+	}
+
 	return config, nil
 }

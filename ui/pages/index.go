@@ -21,6 +21,7 @@ type IndexPage struct {
 	Darkmode     bool
 	PullRequests <-chan map[string][]gitter.PullRequest
 	Trackers     config.Tracking
+	Logger       *log.Logger
 }
 
 func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {
@@ -48,7 +49,7 @@ func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemabl
 
 			idx, err := strconv.Atoi(strings.Split(key, "_")[1])
 			if err != nil {
-				log.Fatalf("unrecognized query response - malformed key (expected format [type]_[number]): %v", key)
+				page.Logger.Fatalf("unrecognized query response - malformed key (expected format [type]_[number]): %v", key)
 			}
 
 			switch trackerType {
@@ -75,8 +76,9 @@ func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemabl
 		ui.SystraySeparator{},
 		ui.SystrayButton{
 			Title: "Quit",
-			Action: func() {
+			Action: func() error {
 				os.Exit(0)
+				return nil
 			},
 		},
 	}
@@ -94,12 +96,14 @@ func (page IndexPage) run() {
 
 func (page IndexPage) Run() {
 	var icon fyne.Resource
+
 	if page.Darkmode {
 		icon = icons.ResIconDefault
 	} else {
 		icon = icons.ResIconDefaultDark
 	}
-	systray := ui.MakeSystray("Git Appletini", icon)
+
+	systray := ui.MakeSystray("Appletini", icon, page.Logger)
 
 	systray.Setup()
 

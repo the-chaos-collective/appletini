@@ -1,9 +1,10 @@
 package components
 
 import (
+	"fmt"
+
 	"git_applet/actions"
 	"git_applet/ui"
-	"log"
 )
 
 type PullRequestOptions struct {
@@ -13,16 +14,17 @@ type PullRequestOptions struct {
 	Permalink       string
 }
 
-func (box PullRequestOptions) Build() ui.SystrayMenu {
+func (info PullRequestOptions) Build() ui.SystrayMenu {
 	return ui.SystrayMenu{
 		Items: []ui.Itemable{
 			ui.SystrayButton{
 				Title: "Open in browser",
-				Action: func() {
-					err := actions.OpenLink(box.Permalink)
+				Action: func() error {
+					err := actions.OpenLink(info.Permalink)
 					if err != nil {
-						log.Fatalf("error opening tracked PR in browser: %v", err)
+						return fmt.Errorf("error opening tracked PR in browser: %w", err)
 					}
+					return nil
 				},
 			},
 		},

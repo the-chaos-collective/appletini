@@ -11,10 +11,12 @@ query PRs {
   }
   {{end}}
 }
+
 fragment getPullRequest on PullRequestConnection {
   edges {
     node {
       id
+      number
       title
       url
       baseRefName
@@ -31,6 +33,7 @@ fragment getPullRequest on PullRequestConnection {
     }
   }
 }
+
 fragment getReviewer on PullRequest {
   reviews(first: {{ .ReviewAmount }}) {
     edges {

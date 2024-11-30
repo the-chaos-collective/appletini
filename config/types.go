@@ -1,6 +1,7 @@
 package config
 
 type Config struct {
+	Computed  Computed
 	Github    GithubConfig `json:"github"`
 	Poll      PollConfig   `json:"poll"`
 	Tracking  Tracking     `json:"tracking"`
@@ -52,3 +53,7 @@ type (
 	RepoSet    []Repo
 	AuthorSet  []Author
 )
+
+type Computed struct {
+	GithubToken string
+}

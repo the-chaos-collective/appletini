@@ -6,38 +6,52 @@ import (
 
 	"git_applet/config"
 	"git_applet/gitter"
+	"git_applet/polling"
 	"git_applet/ui/pages"
 )
 
 func main() {
-	config, err := config.Load(CONFIG_FILE)
-	ehp(err)
+	// * Logger
+	logger := log.Default()
 
-	logger = *log.Default()
-	gqlClient = gitter.GraphQLClient{
+	// * Config
+	config, err := config.Load(CONFIG_FILE)
+	ehp(err, logger)
+
+	// * GraphQL Client
+	gqlClient := &gitter.GraphQLClient{
 		Url:   config.Github.GraphQL,
-		Token: getCurrentAccessToken(config),
+		Token: config.Computed.GithubToken,
+	}
+
+	// * Polling
+	poller := polling.Polling{
+		Logger:    logger,
+		GqlClient: gqlClient,
+		Config:    config,
 	}
 
 	prs := make(chan map[string][]gitter.PullRequest)
 
+	mockQueries := false
+	err = poller.Setup(mockQueries)
+	ehp(err, logger)
+
+	go poller.PollPRs(prs)
+
+	// * UI
 	indexPage := pages.IndexPage{
 		PullRequests: prs,
 		Darkmode:     config.Darkmode,
 		Trackers:     config.Tracking,
+		Logger:       logger,
 	}
-
-	mockQueries := false
-	err = setupPolling(config, mockQueries)
-	ehp(err)
-
-	go pollPRs(config, prs)
 
 	indexPage.Run()
 }
 
-func ehp(err error) {
+func ehp(err error, logger *log.Logger) {
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 }
