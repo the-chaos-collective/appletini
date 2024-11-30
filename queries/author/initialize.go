@@ -34,6 +34,10 @@ func validateConfig(config Config) error {
 		if tracker.Owner == "" {
 			return fmt.Errorf("Trackers[%v].Owner must not be empty", i)
 		}
+
+		if len(tracker.Authors) == 0 {
+			return fmt.Errorf("Trackers[%v].Authors must have at least one author", i)
+		}
 	}
 
 	if config.ReviewAmount <= 0 {

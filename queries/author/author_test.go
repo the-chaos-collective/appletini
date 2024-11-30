@@ -16,6 +16,24 @@ type testConfig struct {
 func TestValidation(t *testing.T) {
 	testCases := []testConfig{
 		{
+			name: "Trackers.Authors > 0",
+			inputs: author.Config{
+				Trackers: []author.Tracker{
+					{
+						Id:      "foo",
+						Authors: []string{},
+						Repo:    "foo",
+						Owner:   "foo",
+						Title:   "foo",
+					},
+				},
+				ReviewAmount:   10,
+				PrAmount:       10,
+				CommentsAmount: 10,
+			},
+			expectedError: errors.New("invalid config: Trackers[0].Authors must have at least one author"),
+		},
+		{
 			name: "CommentsAmount > 0",
 			inputs: author.Config{
 				Trackers:       []author.Tracker{},
