@@ -98,7 +98,7 @@ func setupPolling(mock bool) error {
 
 	author, err := setupAuthorQuery()
 	if err != nil {
-		return fmt.Errorf("setting up polling: %w", err)
+		return fmt.Errorf("setting up  author polling: %w", err)
 	}
 
 	queryAggregator = aggregator.QueryAggregator{
