@@ -1,4 +1,4 @@
-package repo
+package by_label
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ var funcMap = template.FuncMap{
 var tpl string
 
 func generateQuery(conf Config) (string, error) {
-	loadedTemplate, err := template.New("repo_query").Funcs(funcMap).Parse(string(tpl))
+	loadedTemplate, err := template.New("label_query").Funcs(funcMap).Parse(string(tpl))
 	if err != nil {
 		return "", fmt.Errorf("cannot load template funcmap: %w", err)
 	}

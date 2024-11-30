@@ -1,4 +1,4 @@
-package author
+package by_author
 
 type Query struct {
 	shouldBeExecuted bool

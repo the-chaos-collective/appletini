@@ -1,4 +1,4 @@
-package repo
+package by_author
 
 import (
 	"errors"
@@ -29,21 +29,21 @@ func MakeQuery(config Config) (Query, error) {
 }
 
 func validateConfig(config Config) error {
-	for i, repoConfig := range config.Trackers {
-		if repoConfig.Title == "" {
-			return fmt.Errorf("Trackers[%v].Title must not be empty", i)
+	for i, tracker := range config.Trackers {
+		if tracker.Id == "" {
+			return fmt.Errorf("Trackers[%v].Identifier must not be empty", i)
 		}
 
-		if repoConfig.Id == "" {
-			return fmt.Errorf("Trackers[%v].Id must not be empty", i)
+		if tracker.Repo == "" {
+			return fmt.Errorf("Trackers[%v].Repo must not be empty", i)
 		}
 
-		if repoConfig.Repo == "" {
-			return fmt.Errorf("Trackers[%v].Name must not be empty", i)
-		}
-
-		if repoConfig.Owner == "" {
+		if tracker.Owner == "" {
 			return fmt.Errorf("Trackers[%v].Owner must not be empty", i)
+		}
+
+		if len(tracker.Authors) == 0 {
+			return fmt.Errorf("Trackers[%v].Authors must have at least one author", i)
 		}
 	}
 

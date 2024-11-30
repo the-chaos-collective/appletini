@@ -1,4 +1,4 @@
-package labeled
+package by_repo
 
 import (
 	"fmt"
@@ -14,7 +14,8 @@ func (config Config) String() string {
 		config.Trackers,
 		config.PrAmount,
 		config.ReviewAmount,
-		config.CommentsAmount)
+		config.CommentsAmount,
+	)
 }
 
 func (tracker Tracker) String() string {
@@ -22,12 +23,10 @@ func (tracker Tracker) String() string {
 		ID: %v,
 		Owner: %v,
 		Repo: %v,
-		Identifier: %v,
-		Label: %v
+		Title: %v
 	}`,
 		tracker.Id,
 		tracker.Owner,
 		tracker.Repo,
-		tracker.Title,
-		tracker.Label)
+		tracker.Title)
 }

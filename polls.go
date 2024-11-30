@@ -9,10 +9,10 @@ import (
 	"git_applet/gitter"
 	"git_applet/queries"
 	"git_applet/queries/aggregator"
-	"git_applet/queries/author"
-	"git_applet/queries/labeled"
+	"git_applet/queries/by_author"
+	"git_applet/queries/by_label"
+	"git_applet/queries/by_repo"
 	"git_applet/queries/personal"
-	"git_applet/queries/repo"
 )
 
 func setupPersonalQuery() (queries.Query, error) {
@@ -21,11 +21,11 @@ func setupPersonalQuery() (queries.Query, error) {
 	return personalQuery, nil
 }
 
-func setupLabeledQuery() (queries.Query, error) {
-	trackers := []labeled.Tracker{}
+func setupLabelQuery() (queries.Query, error) {
+	trackers := []by_label.Tracker{}
 	for idx, tracker := range Config.Tracking.ByLabel {
-		trackers = append(trackers, labeled.Tracker{
-			Id:    fmt.Sprintf("labeled_%d", idx),
+		trackers = append(trackers, by_label.Tracker{
+			Id:    fmt.Sprintf("label_%d", idx),
 			Title: tracker.Title,
 			Owner: tracker.Owner,
 			Repo:  tracker.RepoName,
@@ -33,7 +33,7 @@ func setupLabeledQuery() (queries.Query, error) {
 		})
 	}
 
-	return labeled.MakeQuery(labeled.Config{
+	return by_label.MakeQuery(by_label.Config{
 		Trackers:       trackers,
 		PrAmount:       Config.ItemCount,
 		ReviewAmount:   10,
@@ -42,9 +42,9 @@ func setupLabeledQuery() (queries.Query, error) {
 }
 
 func setupRepoQuery() (queries.Query, error) {
-	trackers := []repo.Tracker{}
+	trackers := []by_repo.Tracker{}
 	for idx, tracker := range Config.Tracking.ByRepo {
-		trackers = append(trackers, repo.Tracker{
+		trackers = append(trackers, by_repo.Tracker{
 			Id:    fmt.Sprintf("repo_%d", idx),
 			Title: tracker.Title,
 			Owner: tracker.Owner,
@@ -52,7 +52,7 @@ func setupRepoQuery() (queries.Query, error) {
 		})
 	}
 
-	return repo.MakeQuery(repo.Config{
+	return by_repo.MakeQuery(by_repo.Config{
 		Trackers:       trackers,
 		PrAmount:       Config.ItemCount,
 		ReviewAmount:   10,
@@ -61,9 +61,9 @@ func setupRepoQuery() (queries.Query, error) {
 }
 
 func setupAuthorQuery() (queries.Query, error) {
-	trackers := []author.Tracker{}
+	trackers := []by_author.Tracker{}
 	for idx, tracker := range Config.Tracking.ByAuthor {
-		trackers = append(trackers, author.Tracker{
+		trackers = append(trackers, by_author.Tracker{
 			Id:      fmt.Sprintf("author_%d", idx),
 			Title:   tracker.Title,
 			Owner:   tracker.Owner,
@@ -72,7 +72,7 @@ func setupAuthorQuery() (queries.Query, error) {
 		})
 	}
 
-	return author.MakeQuery(author.Config{
+	return by_author.MakeQuery(by_author.Config{
 		Trackers:       trackers,
 		PrAmount:       Config.ItemCount,
 		ReviewAmount:   10,
@@ -86,7 +86,7 @@ func setupPolling(mock bool) error {
 		return fmt.Errorf("setting up polling: %w", err)
 	}
 
-	labeled, err := setupLabeledQuery()
+	labeled, err := setupLabelQuery()
 	if err != nil {
 		return fmt.Errorf("setting up polling: %w", err)
 	}

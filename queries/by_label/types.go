@@ -1,4 +1,4 @@
-package labeled
+package by_label
 
 type Query struct {
 	shouldBeExecuted bool

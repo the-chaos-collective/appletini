@@ -1,4 +1,4 @@
-package labeled
+package by_author
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ var funcMap = template.FuncMap{
 var tpl string
 
 func generateQuery(conf Config) (string, error) {
-	loadedTemplate, err := template.New("labeled_query").Funcs(funcMap).Parse(string(tpl))
+	loadedTemplate, err := template.New("author_query").Funcs(funcMap).Parse(string(tpl))
 	if err != nil {
 		return "", fmt.Errorf("cannot load template funcmap: %w", err)
 	}

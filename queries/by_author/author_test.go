@@ -1,15 +1,15 @@
-package author_test
+package by_author_test
 
 import (
 	"errors"
 	"testing"
 
-	"git_applet/queries/author"
+	"git_applet/queries/by_author"
 )
 
 type testConfig struct {
 	name          string
-	inputs        author.Config
+	inputs        by_author.Config
 	expectedError error
 }
 
@@ -17,8 +17,8 @@ func TestValidation(t *testing.T) {
 	testCases := []testConfig{
 		{
 			name: "Trackers.Authors > 0",
-			inputs: author.Config{
-				Trackers: []author.Tracker{
+			inputs: by_author.Config{
+				Trackers: []by_author.Tracker{
 					{
 						Id:      "foo",
 						Authors: []string{},
@@ -35,8 +35,8 @@ func TestValidation(t *testing.T) {
 		},
 		{
 			name: "CommentsAmount > 0",
-			inputs: author.Config{
-				Trackers:       []author.Tracker{},
+			inputs: by_author.Config{
+				Trackers:       []by_author.Tracker{},
 				ReviewAmount:   10,
 				PrAmount:       10,
 				CommentsAmount: 0,
@@ -45,8 +45,8 @@ func TestValidation(t *testing.T) {
 		},
 		{
 			name: "PrAmount > 0",
-			inputs: author.Config{
-				Trackers:       []author.Tracker{},
+			inputs: by_author.Config{
+				Trackers:       []by_author.Tracker{},
 				ReviewAmount:   10,
 				PrAmount:       0,
 				CommentsAmount: 10,
@@ -55,8 +55,8 @@ func TestValidation(t *testing.T) {
 		},
 		{
 			name: "ReviewAmount > 0",
-			inputs: author.Config{
-				Trackers:       []author.Tracker{},
+			inputs: by_author.Config{
+				Trackers:       []by_author.Tracker{},
 				ReviewAmount:   0,
 				PrAmount:       10,
 				CommentsAmount: 10,
@@ -68,7 +68,7 @@ func TestValidation(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			_, err := author.MakeQuery(testCase.inputs)
+			_, err := by_author.MakeQuery(testCase.inputs)
 			if err.Error() != testCase.expectedError.Error() {
 				t.Fatalf("\ngot: %v\nexpected: %v", err.Error(), testCase.expectedError.Error())
 			}

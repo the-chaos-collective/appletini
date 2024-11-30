@@ -1,15 +1,15 @@
-package repo_test
+package by_label_test
 
 import (
 	"errors"
 	"testing"
 
-	"git_applet/queries/repo"
+	"git_applet/queries/by_label"
 )
 
 type testConfig struct {
 	name          string
-	inputs        repo.Config
+	inputs        by_label.Config
 	expectedError error
 }
 
@@ -17,8 +17,8 @@ func TestValidation(t *testing.T) {
 	testCases := []testConfig{
 		{
 			name: "CommentsAmount > 0",
-			inputs: repo.Config{
-				Trackers:       []repo.Tracker{},
+			inputs: by_label.Config{
+				Trackers:       []by_label.Tracker{},
 				ReviewAmount:   10,
 				PrAmount:       10,
 				CommentsAmount: 0,
@@ -27,8 +27,8 @@ func TestValidation(t *testing.T) {
 		},
 		{
 			name: "PrAmount > 0",
-			inputs: repo.Config{
-				Trackers:       []repo.Tracker{},
+			inputs: by_label.Config{
+				Trackers:       []by_label.Tracker{},
 				ReviewAmount:   10,
 				PrAmount:       0,
 				CommentsAmount: 10,
@@ -37,8 +37,8 @@ func TestValidation(t *testing.T) {
 		},
 		{
 			name: "ReviewAmount > 0",
-			inputs: repo.Config{
-				Trackers:       []repo.Tracker{},
+			inputs: by_label.Config{
+				Trackers:       []by_label.Tracker{},
 				ReviewAmount:   0,
 				PrAmount:       10,
 				CommentsAmount: 10,
@@ -50,7 +50,7 @@ func TestValidation(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			_, err := repo.MakeQuery(testCase.inputs)
+			_, err := by_label.MakeQuery(testCase.inputs)
 			if err.Error() != testCase.expectedError.Error() {
 				t.Fatalf("\ngot: %v\nexpected: %v", err.Error(), testCase.expectedError.Error())
 			}

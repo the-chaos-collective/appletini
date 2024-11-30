@@ -54,7 +54,7 @@ func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemabl
 			switch trackerType {
 			case "repo":
 				groupTitle = page.Trackers.ByRepo[idx].Title
-			case "labeled":
+			case "label":
 				groupTitle = page.Trackers.ByLabel[idx].Title
 			case "author":
 				groupTitle = page.Trackers.ByAuthor[idx].Title

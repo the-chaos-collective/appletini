@@ -1,4 +1,4 @@
-package labeled
+package by_label
 
 import (
 	"errors"

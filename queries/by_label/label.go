@@ -1,4 +1,4 @@
-package repo
+package by_label
 
 import (
 	"fmt"
@@ -6,7 +6,13 @@ import (
 	"git_applet/gitter"
 )
 
-type Result map[string]struct {
+type Result map[string]LabelMap
+
+type LabelMap struct {
+	Label Label `json:"label"`
+}
+
+type Label struct {
 	PullRequests PullRequest `json:"pullRequests"`
 }
 
@@ -37,10 +43,10 @@ type ReviewRequest struct {
 	TotalCount int `json:"totalCount"`
 }
 
-func (result PullRequest) Extract() []gitter.PullRequest {
+func (result LabelMap) Extract() []gitter.PullRequest {
 	all := []gitter.PullRequest{}
 
-	for _, edge := range result.Edges {
+	for _, edge := range result.Label.PullRequests.Edges {
 		node := edge.Node
 
 		pr := gitter.PullRequest{
@@ -72,11 +78,11 @@ func (query Query) GetAll(client gitter.GraphQLClient) (map[string][]gitter.Pull
 
 	err := gitter.AuthorizedGraphQLQuery[Result](client, query.generatedQuery, &res)
 	if err != nil {
-		return map[string][]gitter.PullRequest{}, fmt.Errorf("requesting repo PRs: %w", err)
+		return map[string][]gitter.PullRequest{}, fmt.Errorf("requesting label PRs: %w", err)
 	}
 
-	for key, entry := range res {
-		prs[key] = entry.PullRequests.Extract()
+	for key, prMap := range res {
+		prs[key] = prMap.Extract()
 	}
 
 	return prs, nil

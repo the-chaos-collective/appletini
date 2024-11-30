@@ -1,30 +1,19 @@
-package labeled
+package by_author
 
 import (
 	"fmt"
+	"strings"
 
 	"git_applet/gitter"
 )
 
-type Result map[string]LabelMap
+type Result map[string]NodeMap
 
-type LabelMap struct {
-	Label Label `json:"label"`
-}
-
-type Label struct {
-	PullRequests PullRequest `json:"pullRequests"`
+type NodeMap struct {
+	Nodes []PullRequest `json:"nodes"`
 }
 
 type PullRequest struct {
-	Edges []Edge `json:"edges"`
-}
-
-type Edge struct {
-	Node PullNode `json:"node"`
-}
-
-type PullNode struct {
 	Id             string                 `json:"id"`
 	Title          string                 `json:"title"`
 	Url            string                 `json:"url"`
@@ -43,11 +32,10 @@ type ReviewRequest struct {
 	TotalCount int `json:"totalCount"`
 }
 
-func (result LabelMap) Extract() []gitter.PullRequest {
+func (result NodeMap) Extract() []gitter.PullRequest {
 	all := []gitter.PullRequest{}
 
-	for _, edge := range result.Label.PullRequests.Edges {
-		node := edge.Node
+	for _, node := range result.Nodes {
 
 		pr := gitter.PullRequest{
 			Title:          node.Title,
@@ -78,11 +66,18 @@ func (query Query) GetAll(client gitter.GraphQLClient) (map[string][]gitter.Pull
 
 	err := gitter.AuthorizedGraphQLQuery[Result](client, query.generatedQuery, &res)
 	if err != nil {
-		return map[string][]gitter.PullRequest{}, fmt.Errorf("requesting labeled PRs: %w", err)
+		return map[string][]gitter.PullRequest{}, fmt.Errorf("author response failed: %w", err)
 	}
 
 	for key, prMap := range res {
-		prs[key] = prMap.Extract()
+		parts := strings.Split(key, "_")
+		baseKey := strings.Join(parts[0:2], "_")
+		_, exists := prs[baseKey]
+		if !exists {
+			prs[baseKey] = prMap.Extract()
+		} else {
+			prs[baseKey] = append(prs[baseKey], prMap.Extract()...)
+		}
 	}
 
 	return prs, nil
