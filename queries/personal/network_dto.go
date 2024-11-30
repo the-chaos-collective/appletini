@@ -2,7 +2,7 @@ package personal
 
 import "git_applet/gitter"
 
-type PrResponse struct {
+type Response struct {
 	Viewer struct {
 		PullRequests struct {
 			Nodes []edge `json:"edges"`
@@ -45,7 +45,7 @@ func (pr pullRequestPersonal) transform() gitter.PullRequest {
 	}
 }
 
-func (pr PrResponse) Extract() []gitter.PullRequest {
+func (pr Response) Extract() []gitter.PullRequest {
 	prs := []gitter.PullRequest{}
 	for _, val := range pr.Viewer.PullRequests.Nodes {
 		prs = append(prs, val.Node.transform())

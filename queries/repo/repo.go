@@ -2,8 +2,8 @@ package repo
 
 import (
 	"fmt"
+
 	"git_applet/gitter"
-	"strings"
 )
 
 type Result map[string]struct {
@@ -61,17 +61,19 @@ func (result PullRequest) Extract() []gitter.PullRequest {
 	return all
 }
 
-func (query RepoQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
-	res := Result{} // make(map[string]interface{})
+func (query Query) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
+	prs := make(map[string][]gitter.PullRequest)
 
-	if strings.Trim(query.generatedQuery, "\n") != "" {
-		err := gitter.AuthorizedGraphQLQuery[Result](client, query.generatedQuery, &res)
-		if err != nil {
-			return map[string][]gitter.PullRequest{}, fmt.Errorf("requesting repo PRs: %w", err)
-		}
+	if !query.shouldBeExecuted {
+		return prs, nil
 	}
 
-	prs := make(map[string][]gitter.PullRequest)
+	res := Result{}
+
+	err := gitter.AuthorizedGraphQLQuery[Result](client, query.generatedQuery, &res)
+	if err != nil {
+		return map[string][]gitter.PullRequest{}, fmt.Errorf("requesting repo PRs: %w", err)
+	}
 
 	for key, entry := range res {
 		prs[key] = entry.PullRequests.Extract()

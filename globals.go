@@ -1,10 +1,11 @@
 package main
 
 import (
+	"log"
+
 	"git_applet/gitter"
 	"git_applet/queries"
 	"git_applet/types"
-	"log"
 )
 
 // global and default stuff.

@@ -6,6 +6,12 @@ import (
 )
 
 func MakeQuery(config Config) (Query, error) {
+	if len(config.Trackers) == 0 {
+		return Query{
+			shouldBeExecuted: false,
+		}, nil
+	}
+
 	err := validateConfig(config)
 	if err != nil {
 		return Query{}, fmt.Errorf("invalid config: %w", err)
@@ -17,7 +23,8 @@ func MakeQuery(config Config) (Query, error) {
 	}
 
 	return Query{
-		generatedQuery: query,
+		shouldBeExecuted: true,
+		generatedQuery:   query,
 	}, nil
 }
 

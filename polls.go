@@ -16,7 +16,7 @@ import (
 )
 
 func setupPersonalQuery() (queries.Query, error) {
-	personalQuery := personal.PersonalQuery{}
+	personalQuery := personal.Query{}
 
 	return personalQuery, nil
 }
@@ -33,7 +33,7 @@ func setupLabeledQuery() (queries.Query, error) {
 		})
 	}
 
-	return labeled.MakeLabeledQuery(labeled.Config{
+	return labeled.MakeQuery(labeled.Config{
 		Trackers:       trackers,
 		PrAmount:       Config.ItemCount,
 		ReviewAmount:   10,
@@ -52,7 +52,7 @@ func setupRepoQuery() (queries.Query, error) {
 		})
 	}
 
-	return repo.MakeRepoQuery(repo.Config{
+	return repo.MakeQuery(repo.Config{
 		Trackers:       trackers,
 		PrAmount:       Config.ItemCount,
 		ReviewAmount:   10,

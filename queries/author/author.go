@@ -56,16 +56,18 @@ func (result NodeMap) Extract() []gitter.PullRequest {
 }
 
 func (query Query) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
-	res := Result{}
+	prs := make(map[string][]gitter.PullRequest)
 
-	if strings.Trim(query.generatedQuery, "\n") != "" {
-		err := gitter.AuthorizedGraphQLQuery[Result](client, query.generatedQuery, &res)
-		if err != nil {
-			return map[string][]gitter.PullRequest{}, fmt.Errorf("author response failed: %w", err)
-		}
+	if !query.shouldBeExecuted {
+		return prs, nil
 	}
 
-	prs := make(map[string][]gitter.PullRequest)
+	res := Result{}
+
+	err := gitter.AuthorizedGraphQLQuery[Result](client, query.generatedQuery, &res)
+	if err != nil {
+		return map[string][]gitter.PullRequest{}, fmt.Errorf("author response failed: %w", err)
+	}
 
 	for key, prMap := range res {
 		parts := strings.Split(key, "_")

@@ -1,7 +1,8 @@
 package author
 
 type Query struct {
-	generatedQuery string
+	shouldBeExecuted bool
+	generatedQuery   string
 }
 
 type Config struct {

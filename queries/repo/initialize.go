@@ -5,19 +5,26 @@ import (
 	"fmt"
 )
 
-func MakeRepoQuery(config Config) (RepoQuery, error) {
+func MakeQuery(config Config) (Query, error) {
+	if len(config.Trackers) == 0 {
+		return Query{
+			shouldBeExecuted: false,
+		}, nil
+	}
+
 	err := validateConfig(config)
 	if err != nil {
-		return RepoQuery{}, fmt.Errorf("invalid config: %w", err)
+		return Query{}, fmt.Errorf("invalid config: %w", err)
 	}
 
 	query, err := generateQuery(config)
 	if err != nil {
-		return RepoQuery{}, fmt.Errorf("error generating query: %w", err)
+		return Query{}, fmt.Errorf("error generating query: %w", err)
 	}
 
-	return RepoQuery{
-		generatedQuery: query,
+	return Query{
+		shouldBeExecuted: true,
+		generatedQuery:   query,
 	}, nil
 }
 

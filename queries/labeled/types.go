@@ -1,7 +1,8 @@
 package labeled
 
-type LabeledQuery struct {
-	generatedQuery string
+type Query struct {
+	shouldBeExecuted bool
+	generatedQuery   string
 }
 
 type Config struct {

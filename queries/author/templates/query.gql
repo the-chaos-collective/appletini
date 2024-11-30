@@ -1,4 +1,3 @@
-{{ if .Trackers }}
 query PRs {
   {{ range $_, $tracker := .Trackers }}
     {{ range $author_id, $author := $tracker.Authors }}
@@ -51,4 +50,3 @@ fragment getReviewer on PullRequest {
     }
   }
 }
-{{ end }}

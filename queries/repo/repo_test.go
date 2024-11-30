@@ -2,8 +2,9 @@ package repo_test
 
 import (
 	"errors"
-	"git_applet/queries/repo"
 	"testing"
+
+	"git_applet/queries/repo"
 )
 
 type testConfig struct {
@@ -49,7 +50,7 @@ func TestValidation(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			_, err := repo.MakeRepoQuery(testCase.inputs)
+			_, err := repo.MakeQuery(testCase.inputs)
 			if err.Error() != testCase.expectedError.Error() {
 				t.Fatalf("\ngot: %v\nexpected: %v", err.Error(), testCase.expectedError.Error())
 			}

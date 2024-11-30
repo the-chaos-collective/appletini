@@ -17,11 +17,11 @@ var funcMap = template.FuncMap{
 	"ToUpper": strings.ToUpper,
 }
 
-//go:embed templates/prMultiRepoByLabel.gql
+//go:embed templates/query.gql
 var tpl string
 
 func generateQuery(conf Config) (string, error) {
-	loadedTemplate, err := template.New("prMultiRepoByLabel").Funcs(funcMap).Parse(string(tpl))
+	loadedTemplate, err := template.New("labeled_query").Funcs(funcMap).Parse(string(tpl))
 	if err != nil {
 		return "", fmt.Errorf("cannot load template funcmap: %w", err)
 	}

@@ -2,11 +2,11 @@ package labeled
 
 import (
 	"fmt"
+
 	"git_applet/gitter"
-	"strings"
 )
 
-type LabeledResult map[string]LabelMap
+type Result map[string]LabelMap
 
 type LabelMap struct {
 	Label Label `json:"label"`
@@ -67,20 +67,22 @@ func (result LabelMap) Extract() []gitter.PullRequest {
 	return all
 }
 
-func (query LabeledQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
-	res := LabeledResult{}
-
-	if strings.Trim(query.generatedQuery, "\n") != "" {
-		err := gitter.AuthorizedGraphQLQuery[LabeledResult](client, query.generatedQuery, &res)
-		if err != nil {
-			return map[string][]gitter.PullRequest{}, fmt.Errorf("requesting labeled PRs: %w", err)
-		}
-	}
-
+func (query Query) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
 	prs := make(map[string][]gitter.PullRequest)
 
-	for key, labeledMap := range res {
-		prs[key] = labeledMap.Extract()
+	if !query.shouldBeExecuted {
+		return prs, nil
+	}
+
+	res := Result{}
+
+	err := gitter.AuthorizedGraphQLQuery[Result](client, query.generatedQuery, &res)
+	if err != nil {
+		return map[string][]gitter.PullRequest{}, fmt.Errorf("requesting labeled PRs: %w", err)
+	}
+
+	for key, prMap := range res {
+		prs[key] = prMap.Extract()
 	}
 
 	return prs, nil

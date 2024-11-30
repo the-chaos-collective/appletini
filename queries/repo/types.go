@@ -1,7 +1,8 @@
 package repo
 
-type RepoQuery struct {
-	generatedQuery string
+type Query struct {
+	shouldBeExecuted bool
+	generatedQuery   string
 }
 
 type Config struct {
