@@ -4,15 +4,19 @@ package status
 type ReviewState int
 
 const (
-	ReviewState_Approved ReviewState = iota
+	ReviewState_Unknown ReviewState = iota
+	ReviewState_Approved
 	ReviewState_RequiresReview
+	ReviewState_ChangesRequested
+	ReviewState_NoReviewRequired
 )
 
 // MergeableState
 type MergeableState int
 
 const (
-	MergeableState_Conflict MergeableState = iota
+	MergeableState_Unknown MergeableState = iota
+	MergeableState_Conflict
 	MergeableState_Mergeable
 )
 
@@ -24,11 +28,11 @@ type PRInfo struct {
 type Status struct {
 	ShowGreenIcon bool
 	ShowRedIcon   bool
-	Emoji         string
+	Emoji         []string
 	Message       string
 }
 
-func Classify(input PRInfo) Status {
+func (input PRInfo) Classify() Status {
 	return Status{
 		ShowGreenIcon: ShowGreenIcon(input),
 		ShowRedIcon:   ShowRedIcon(input),
