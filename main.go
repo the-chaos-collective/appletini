@@ -15,26 +15,25 @@ func main() {
 	logger := log.Default()
 
 	// * Config
-	config, err := config.Load(CONFIG_FILE)
+	conf, err := config.Load(CONFIG_FILE, DUMP_MIGRATIONS, logger)
 	ehp(err, logger)
 
 	// * GraphQL Client
 	gqlClient := &gitter.GraphQLClient{
-		Url:   config.Github.GraphQL,
-		Token: config.Computed.GithubToken,
+		Url:   conf.Github.GraphQL,
+		Token: conf.Computed.GithubToken,
 	}
 
 	// * Polling
 	poller := polling.Polling{
 		Logger:    logger,
 		GqlClient: gqlClient,
-		Config:    config,
+		Config:    conf,
 	}
 
 	prs := make(chan map[string][]gitter.PullRequest)
 
-	mockQueries := false
-	err = poller.Setup(mockQueries)
+	err = poller.Setup(MOCK_QUERIES)
 	ehp(err, logger)
 
 	go poller.PollPRs(prs)
@@ -42,8 +41,8 @@ func main() {
 	// * UI
 	indexPage := pages.IndexPage{
 		PullRequests: prs,
-		Darkmode:     config.Darkmode,
-		Trackers:     config.Tracking,
+		Darkmode:     conf.Darkmode,
+		Trackers:     conf.Tracking,
 		Logger:       logger,
 	}
 
@@ -52,6 +51,6 @@ func main() {
 
 func ehp(err error, logger *log.Logger) {
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatalf("Runtime error: %v\n", err)
 	}
 }
