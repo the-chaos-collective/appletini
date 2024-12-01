@@ -15,7 +15,16 @@ type (
 	Tracking = v2.Tracking
 )
 
-func Load(filename string) (Config, error) {
+func Load(filename string, dumpMigrations bool) (Config, error) {
+	_, err := os.ReadFile(filename)
+	if err != nil {
+		defaultConfig := v1.Default()
+		err = defaultConfig.Save(filename)
+		if err != nil {
+			return Config{}, fmt.Errorf("saving default config: %w", err)
+		}
+	}
+
 	currentVersion, err := migration.ReadVersion(filename)
 	if err != nil {
 		return Config{}, fmt.Errorf("determining current version: %w", err)
@@ -32,9 +41,11 @@ func Load(filename string) (Config, error) {
 
 		new := old.ToNext()
 
-		err = os.Rename(filename, strings.ReplaceAll(filename, ".json", ".v1.json"))
-		if err != nil {
-			return Config{}, fmt.Errorf("renaming old config: %w", err)
+		if dumpMigrations {
+			err = os.Rename(filename, strings.ReplaceAll(filename, ".json", ".v1.json"))
+			if err != nil {
+				return Config{}, fmt.Errorf("renaming old config: %w", err)
+			}
 		}
 
 		err = new.Save(filename)

@@ -16,27 +16,20 @@ type GithubConfig struct {
 type PollConfig struct {
 	Frequency int `json:"frequencySeconds"`
 }
+
 type Tracking struct {
-	ByLabel        LabeledRepoSet `json:"byLabel"`
-	ByRepo         RepoSet        `json:"byRepo"`
-	Projects       ProjectSet     `json:"projects"`
-	CommentsAmount string         `json:"commentsAmount"`
-	ReviewAmount   string         `json:"reviewAmount"`
-	PrAmount       string         `json:"prAmount"`
+	ByLabel LabeledRepoSet `json:"byLabel"`
+	ByRepo  RepoSet        `json:"byRepo"`
 }
+
 type LabeledRepo struct {
 	Title    string `json:"title"`
 	Owner    string `json:"owner"`
 	RepoName string `json:"repo"`
 	Label    string `json:"label"`
 }
-type Repo struct {
-	Title    string `json:"title"`
-	Owner    string `json:"owner"`
-	RepoName string `json:"repo"`
-}
 
-type Project struct {
+type Repo struct {
 	Title    string `json:"title"`
 	Owner    string `json:"owner"`
 	RepoName string `json:"repo"`
@@ -45,5 +38,4 @@ type Project struct {
 type (
 	LabeledRepoSet []LabeledRepo
 	RepoSet        []Repo
-	ProjectSet     []Project
 )

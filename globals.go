@@ -1,4 +1,7 @@
 package main
 
 // global and default stuff.
-const CONFIG_FILE = "config.json"
+const (
+	CONFIG_FILE     string = "config.json"
+	DUMP_MIGRATIONS bool   = false
+)

@@ -15,7 +15,7 @@ func main() {
 	logger := log.Default()
 
 	// * Config
-	config, err := config.Load(CONFIG_FILE)
+	config, err := config.Load(CONFIG_FILE, DUMP_MIGRATIONS)
 	ehp(err, logger)
 
 	// * GraphQL Client

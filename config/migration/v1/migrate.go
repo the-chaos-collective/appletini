@@ -38,7 +38,7 @@ func (config Config) ToNext() v2.Config {
 
 	err := new.Setup()
 	if err != nil {
-		log.Fatal("migrating config from v1 to v2: %w", err)
+		log.Fatalf("migrating config from v1 to v2: %v", err)
 	}
 
 	return new
