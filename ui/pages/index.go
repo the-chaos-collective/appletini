@@ -24,20 +24,64 @@ type IndexPage struct {
 	Logger       logging.Logger
 }
 
+type iconState struct {
+	green bool
+	red   bool
+}
+
+var lightIcons = map[iconState]fyne.Resource{
+	{false, false}: icons.ResIconDefault,
+	{false, true}:  icons.ResIconReviewable,
+	{true, false}:  icons.ResIconMergeable,
+	{true, true}:   icons.ResIconBoth,
+}
+
+var darkIcons = map[iconState]fyne.Resource{
+	{false, false}: icons.ResIconDefaultDark,
+	{false, true}:  icons.ResIconReviewableDark,
+	{true, false}:  icons.ResIconMergeableDark,
+	{true, true}:   icons.ResIconBothDark,
+}
+
 func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {
 	result := make([]ui.Itemable, 0, 5) // separator + quit button + 3 tracking types by default
+
 	for key, value := range prs {
 		prList := make([]ui.Itemable, 0, 1) // at least one pr
+
+		showGreenIcon := false
+		showRedIcon := false
+
 		for _, pr := range value {
+			status := pr.PRInfo().Classify()
+
 			prList = append(prList, components.PullRequest{
 				Title:       pr.Title,
 				Number:      pr.Number,
-				Mergeable:   pr.MergeableState(),
-				Review:      pr.ReviewState(),
 				HeadRefName: pr.HeadRefName,
 				BaseRefName: pr.BaseRefName,
 				Permalink:   pr.Permalink,
+				Status:      status,
 			}.Build())
+
+			if status.ShowGreenIcon {
+				showGreenIcon = true
+			}
+
+			if status.ShowRedIcon {
+				showRedIcon = true
+			}
+		}
+
+		iconState := iconState{
+			green: showGreenIcon,
+			red:   showRedIcon,
+		}
+
+		if page.Darkmode {
+			page.systray.SetIcon(darkIcons[iconState])
+		} else {
+			page.systray.SetIcon(lightIcons[iconState])
 		}
 
 		groupTitle := ""
@@ -98,9 +142,9 @@ func (page IndexPage) Run() {
 	var icon fyne.Resource
 
 	if page.Darkmode {
-		icon = icons.ResIconDefault
-	} else {
 		icon = icons.ResIconDefaultDark
+	} else {
+		icon = icons.ResIconDefault
 	}
 
 	systray := ui.MakeSystray("Appletini", icon, page.Logger)

@@ -22,7 +22,7 @@ type PullRequest struct {
 	_         map[string]any `yaml:",inline"`
 }
 
-func (pr PullRequest) ReviewState() status.ReviewState {
+func (pr PullRequest) reviewState() status.ReviewState {
 	switch pr.ReviewDecision {
 	case "APPROVED":
 		return status.ReviewState_Approved
@@ -37,7 +37,7 @@ func (pr PullRequest) ReviewState() status.ReviewState {
 	return status.ReviewState_Unknown
 }
 
-func (pr PullRequest) MergeableState() status.MergeableState {
+func (pr PullRequest) mergeableState() status.MergeableState {
 	switch pr.Mergeable {
 	case "MERGEABLE":
 		return status.MergeableState_Mergeable
@@ -46,4 +46,11 @@ func (pr PullRequest) MergeableState() status.MergeableState {
 	}
 	log.Printf("Missing mergeable state: %s", pr.ReviewDecision)
 	return status.MergeableState_Unknown
+}
+
+func (pr PullRequest) PRInfo() status.PRInfo {
+	return status.PRInfo{
+		Review:    pr.reviewState(),
+		Mergeable: pr.mergeableState(),
+	}
 }
