@@ -1,5 +1,7 @@
 package status
 
+import "fmt"
+
 func Message(input PRInfo) string {
-	return "Ready for merge"
+	return fmt.Sprintf("%s | %s", input.Review, input.Mergeable)
 }

@@ -30,13 +30,13 @@ func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemabl
 		prList := make([]ui.Itemable, 0, 1) // at least one pr
 		for _, pr := range value {
 			prList = append(prList, components.PullRequest{
-				Title:          pr.Title,
-				Number:         pr.Number,
-				Mergeable:      pr.Mergeable,
-				ReviewDecision: pr.ReviewDecision,
-				HeadRefName:    pr.HeadRefName,
-				BaseRefName:    pr.BaseRefName,
-				Permalink:      pr.Permalink,
+				Title:       pr.Title,
+				Number:      pr.Number,
+				Mergeable:   pr.MergeableState(),
+				Review:      pr.ReviewState(),
+				HeadRefName: pr.HeadRefName,
+				BaseRefName: pr.BaseRefName,
+				Permalink:   pr.Permalink,
 			}.Build())
 		}
 
