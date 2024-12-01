@@ -134,7 +134,7 @@ func (p Polling) PollPRs(prs chan<- map[string][]gitter.PullRequest) {
 	for {
 		trackingPrs, err := p.queryAggregator.GetAll(*p.GqlClient)
 		if err != nil {
-			p.Logger.Printf("when polling for PRs: %v", err)
+			p.Logger.Printf("When polling for PRs: %v", err)
 		}
 
 		hasher.Check(trackingPrs, prs)

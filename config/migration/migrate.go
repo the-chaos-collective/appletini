@@ -22,7 +22,7 @@ func loadAsVersion(filename string, version int) (migration_types.Migratable, er
 		return v2.Load(filename)
 	}
 
-	return v1.Default(), fmt.Errorf("error loading config (v%d)", version)
+	return migration_types.NullConfig{}, fmt.Errorf("no loader for config v%d", version)
 }
 
 func MigrateTo(filename string, targetVersion int, dumpMigrations bool, logger *log.Logger) (migration_types.Migratable, error) {

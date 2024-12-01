@@ -23,7 +23,7 @@ func (config Config) ToNext() (migration_types.Migratable, error) {
 			ByRepo:   config.Tracking.ByRepo.ToNext(),
 			ByAuthor: v2.AuthorSet{
 				v2.Author{
-					Title: "That Guy's",
+					Title: "The Appletini Team",
 					Authors: []string{
 						"darvoid",
 						"tobyselway",
