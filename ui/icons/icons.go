@@ -46,7 +46,7 @@ var ResIconDefaultDark = &fyne.StaticResource{
 	StaticContent: iconDefaultDark,
 }
 
-//go:embed assets/tray2.png
+//go:embed assets/tray2_dark.png
 var iconReviewableDark []byte
 
 var ResIconReviewableDark = &fyne.StaticResource{
@@ -62,7 +62,7 @@ var ResIconMergeableDark = &fyne.StaticResource{
 	StaticContent: iconMergeableDark,
 }
 
-//go:embed assets/tray4.png
+//go:embed assets/tray4_dark.png
 var iconBothDark []byte
 
 var ResIconBothDark = &fyne.StaticResource{
