@@ -2,8 +2,8 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
-	"strings"
 
 	"git_applet/config/migration"
 	v1 "git_applet/config/migration/v1"
@@ -15,49 +15,23 @@ type (
 	Tracking = v2.Tracking
 )
 
-func Load(filename string, dumpMigrations bool) (Config, error) {
+var LatestVersion int = 2
+
+func Load(filename string, dumpMigrations bool, logger *log.Logger) (Config, error) {
 	_, err := os.ReadFile(filename)
-	if err != nil {
-		defaultConfig := v1.Default()
+	if err != nil { // If no config exists
+		logger.Println("Generating default config")
+		defaultConfig := v1.Default() // Load default v1
 		err = defaultConfig.Save(filename)
 		if err != nil {
 			return Config{}, fmt.Errorf("saving default config: %w", err)
 		}
 	}
 
-	currentVersion, err := migration.ReadVersion(filename)
+	config, err := migration.MigrateTo(filename, LatestVersion, dumpMigrations, logger)
 	if err != nil {
-		return Config{}, fmt.Errorf("determining current version: %w", err)
+		return Config{}, err
 	}
 
-	switch currentVersion {
-	case 0:
-		fallthrough
-	case 1:
-		old, err := v1.Load(filename)
-		if err != nil {
-			return Config{}, fmt.Errorf("reading old config: %w", err)
-		}
-
-		new := old.ToNext()
-
-		if dumpMigrations {
-			err = os.Rename(filename, strings.ReplaceAll(filename, ".json", ".v1.json"))
-			if err != nil {
-				return Config{}, fmt.Errorf("renaming old config: %w", err)
-			}
-		}
-
-		err = new.Save(filename)
-		if err != nil {
-			return Config{}, fmt.Errorf("saving new config: %w", err)
-		}
-
-		return new, nil
-
-	case 2:
-		return v2.Load(filename)
-	}
-
-	return Config{}, fmt.Errorf("unable to load config (v%d)", currentVersion)
+	return config.(Config), err
 }

@@ -1,12 +1,13 @@
 package v1
 
 import (
-	"log"
+	"fmt"
 
+	"git_applet/config/migration/migration_types"
 	v2 "git_applet/config/migration/v2"
 )
 
-func (config Config) ToNext() v2.Config {
+func (config Config) ToNext() (migration_types.Migratable, error) {
 	new := v2.Config{
 		Version: 2,
 		Github: v2.GithubConfig{
@@ -38,10 +39,10 @@ func (config Config) ToNext() v2.Config {
 
 	err := new.Setup()
 	if err != nil {
-		log.Fatalf("migrating config from v1 to v2: %v", err)
+		return new, fmt.Errorf("from v1 to v2: %w", err)
 	}
 
-	return new
+	return new, nil
 }
 
 func (labelTracker LabeledRepo) ToNext() v2.Labeled {

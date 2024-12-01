@@ -15,7 +15,7 @@ func main() {
 	logger := log.Default()
 
 	// * Config
-	config, err := config.Load(CONFIG_FILE, DUMP_MIGRATIONS)
+	config, err := config.Load(CONFIG_FILE, DUMP_MIGRATIONS, logger)
 	ehp(err, logger)
 
 	// * GraphQL Client
@@ -33,8 +33,7 @@ func main() {
 
 	prs := make(chan map[string][]gitter.PullRequest)
 
-	mockQueries := false
-	err = poller.Setup(mockQueries)
+	err = poller.Setup(MOCK_QUERIES)
 	ehp(err, logger)
 
 	go poller.PollPRs(prs)
@@ -52,6 +51,6 @@ func main() {
 
 func ehp(err error, logger *log.Logger) {
 	if err != nil {
-		logger.Fatal(err)
+		logger.Fatalf("Runtime error: %v\n", err)
 	}
 }
