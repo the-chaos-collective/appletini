@@ -15,20 +15,20 @@ func main() {
 	logger := log.Default()
 
 	// * Config
-	config, err := config.Load(CONFIG_FILE, DUMP_MIGRATIONS, logger)
+	conf, err := config.Load(CONFIG_FILE, DUMP_MIGRATIONS, logger)
 	ehp(err, logger)
 
 	// * GraphQL Client
 	gqlClient := &gitter.GraphQLClient{
-		Url:   config.Github.GraphQL,
-		Token: config.Computed.GithubToken,
+		Url:   conf.Github.GraphQL,
+		Token: conf.Computed.GithubToken,
 	}
 
 	// * Polling
 	poller := polling.Polling{
 		Logger:    logger,
 		GqlClient: gqlClient,
-		Config:    config,
+		Config:    conf,
 	}
 
 	prs := make(chan map[string][]gitter.PullRequest)
@@ -41,8 +41,8 @@ func main() {
 	// * UI
 	indexPage := pages.IndexPage{
 		PullRequests: prs,
-		Darkmode:     config.Darkmode,
-		Trackers:     config.Tracking,
+		Darkmode:     conf.Darkmode,
+		Trackers:     conf.Tracking,
 		Logger:       logger,
 	}
 
