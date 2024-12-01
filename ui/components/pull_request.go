@@ -11,51 +11,41 @@ import (
 type PullRequest struct {
 	Number      int
 	Title       string
-	Mergeable   status.MergeableState
-	Review      status.ReviewState
 	HeadRefName string
 	BaseRefName string
 	Permalink   string
+	Status      status.Status
 }
 
-func (pr PullRequest) status() status.PRInfo {
-	return status.PRInfo{
-		Review:    pr.Review,
-		Mergeable: pr.Mergeable,
-	}
-}
-
-func (pr PullRequest) makeTitle(s status.Status) string {
+func (pr PullRequest) makeTitle() string {
 	emoji := ""
-	if len(s.Emoji) > 0 {
-		emoji = s.Emoji[0]
+	if len(pr.Status.Emoji) > 0 {
+		emoji = pr.Status.Emoji[0]
 	}
 	return fmt.Sprintf("%s\t(#%d) %s", emoji, pr.Number, pr.Title)
 }
 
-func (pr PullRequest) makeBranchLine(s status.Status) string {
+func (pr PullRequest) makeBranchLine() string {
 	emoji := ""
-	if len(s.Emoji) > 1 {
-		emoji = s.Emoji[1]
+	if len(pr.Status.Emoji) > 1 {
+		emoji = pr.Status.Emoji[1]
 	}
 	return fmt.Sprintf("%s\t%s ➜ %s", emoji, pr.HeadRefName, pr.BaseRefName)
 }
 
-func (pr PullRequest) makeStatus(s status.Status) string {
+func (pr PullRequest) makeStatus() string {
 	emoji := ""
-	if len(s.Emoji) > 2 {
-		emoji = s.Emoji[2]
+	if len(pr.Status.Emoji) > 2 {
+		emoji = pr.Status.Emoji[2]
 	}
-	return fmt.Sprintf("%s\t%s", emoji, s.Message)
+	return fmt.Sprintf("%s\t%s", emoji, pr.Status.Message)
 }
 
 func (pr PullRequest) makeText() string {
-	s := pr.status().Classify()
-
 	return strings.Join([]string{
-		pr.makeTitle(s),
-		pr.makeBranchLine(s),
-		pr.makeStatus(s),
+		pr.makeTitle(),
+		pr.makeBranchLine(),
+		pr.makeStatus(),
 	}, "\n")
 }
 
