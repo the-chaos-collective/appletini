@@ -18,6 +18,7 @@ fragment getPullRequest on PullRequestConnection {
   edges {
     node {
       id
+      number
       title
       url
       baseRefName

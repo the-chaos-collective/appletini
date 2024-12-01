@@ -1,12 +1,13 @@
-package main
+package polling
 
 import (
 	"fmt"
 	"log"
-	"os"
 	"time"
 
+	"git_applet/config"
 	"git_applet/gitter"
+	"git_applet/hasher"
 	"git_applet/queries"
 	"git_applet/queries/aggregator"
 	"git_applet/queries/by_author"
@@ -15,15 +16,22 @@ import (
 	"git_applet/queries/personal"
 )
 
+type Polling struct {
+	Logger          *log.Logger
+	GqlClient       *gitter.GraphQLClient
+	Config          config.Config
+	queryAggregator queries.Query
+}
+
 func setupPersonalQuery() (queries.Query, error) {
 	personalQuery := personal.Query{}
 
 	return personalQuery, nil
 }
 
-func setupLabelQuery() (queries.Query, error) {
+func (p Polling) setupLabelQuery() (queries.Query, error) {
 	trackers := []by_label.Tracker{}
-	for idx, tracker := range Config.Tracking.ByLabel {
+	for idx, tracker := range p.Config.Tracking.ByLabel {
 		trackers = append(trackers, by_label.Tracker{
 			Id:    fmt.Sprintf("label_%d", idx),
 			Title: tracker.Title,
@@ -35,15 +43,15 @@ func setupLabelQuery() (queries.Query, error) {
 
 	return by_label.MakeQuery(by_label.Config{
 		Trackers:       trackers,
-		PrAmount:       Config.ItemCount,
+		PrAmount:       p.Config.ItemCount,
 		ReviewAmount:   10,
 		CommentsAmount: 10,
 	})
 }
 
-func setupRepoQuery() (queries.Query, error) {
+func (p Polling) setupRepoQuery() (queries.Query, error) {
 	trackers := []by_repo.Tracker{}
-	for idx, tracker := range Config.Tracking.ByRepo {
+	for idx, tracker := range p.Config.Tracking.ByRepo {
 		trackers = append(trackers, by_repo.Tracker{
 			Id:    fmt.Sprintf("repo_%d", idx),
 			Title: tracker.Title,
@@ -54,15 +62,15 @@ func setupRepoQuery() (queries.Query, error) {
 
 	return by_repo.MakeQuery(by_repo.Config{
 		Trackers:       trackers,
-		PrAmount:       Config.ItemCount,
+		PrAmount:       p.Config.ItemCount,
 		ReviewAmount:   10,
 		CommentsAmount: 10,
 	})
 }
 
-func setupAuthorQuery() (queries.Query, error) {
+func (p Polling) setupAuthorQuery() (queries.Query, error) {
 	trackers := []by_author.Tracker{}
-	for idx, tracker := range Config.Tracking.ByAuthor {
+	for idx, tracker := range p.Config.Tracking.ByAuthor {
 		trackers = append(trackers, by_author.Tracker{
 			Id:      fmt.Sprintf("author_%d", idx),
 			Title:   tracker.Title,
@@ -74,24 +82,24 @@ func setupAuthorQuery() (queries.Query, error) {
 
 	return by_author.MakeQuery(by_author.Config{
 		Trackers:       trackers,
-		PrAmount:       Config.ItemCount,
+		PrAmount:       p.Config.ItemCount,
 		ReviewAmount:   10,
 		CommentsAmount: 10,
 	})
 }
 
-func setupPolling(mock bool) error {
-	labeled, err := setupLabelQuery()
+func (p *Polling) Setup(mock bool) error {
+	labeled, err := p.setupLabelQuery()
 	if err != nil {
 		return fmt.Errorf("setting up label polling: %w", err)
 	}
 
-	repo, err := setupRepoQuery()
+	repo, err := p.setupRepoQuery()
 	if err != nil {
 		return fmt.Errorf("setting up repo polling: %w", err)
 	}
 
-	author, err := setupAuthorQuery()
+	author, err := p.setupAuthorQuery()
 	if err != nil {
 		return fmt.Errorf("setting up author polling: %w", err)
 	}
@@ -102,7 +110,7 @@ func setupPolling(mock bool) error {
 		author,
 	}
 
-	if Config.Tracking.Personal {
+	if p.Config.Tracking.Personal {
 		personal, err := setupPersonalQuery()
 		if err != nil {
 			return fmt.Errorf("setting up personal polling: %w", err)
@@ -110,35 +118,31 @@ func setupPolling(mock bool) error {
 		queries = append(queries, personal)
 	}
 
-	queryAggregator = aggregator.QueryAggregator{
+	p.queryAggregator = aggregator.QueryAggregator{
 		Queries: queries,
 		Mock:    mock,
+		Logger:  p.Logger,
 	}
 
 	return nil
 }
 
-func getCurrentAccessToken() string {
-	token, present := os.LookupEnv(Config.Github.Token)
-	if !present {
-		log.Fatal("token not present")
+func (p Polling) PollPRs(prs chan<- map[string][]gitter.PullRequest) {
+	hasher := hasher.Hasher{
+		Logger: p.Logger,
 	}
-	return token
-}
-
-func pollPRs(prs chan<- map[string][]gitter.PullRequest) {
 	for {
-		trackingPrs, err := queryAggregator.GetAll(gqlClient)
+		trackingPrs, err := p.queryAggregator.GetAll(*p.GqlClient)
 		if err != nil {
-			log.Printf("when polling for PRs: %v", err)
+			p.Logger.Printf("when polling for PRs: %v", err)
 		}
 
-		hashCheck(trackingPrs, prs)
+		hasher.Check(trackingPrs, prs)
 
-		time.Sleep(getPollDuration())
+		time.Sleep(p.getPollDuration())
 	}
 }
 
-func getPollDuration() time.Duration {
-	return time.Duration(Config.Poll.Frequency * int(time.Second))
+func (p Polling) getPollDuration() time.Duration {
+	return time.Duration(p.Config.Poll.Frequency * int(time.Second))
 }

@@ -8,60 +8,60 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 )
 
-func (systray *Systray) createApp() {
+func (s *Systray) createApp() {
 	// create app
-	app := app.NewWithID("git_appletini")
+	app := app.NewWithID("appletini")
 
-	systray.fyneApp = &app
+	s.fyneApp = &app
 
 	var ok bool
 
 	// get desktop app
-	desk, ok := (*systray.fyneApp).(desktop.App)
+	desk, ok := (*s.fyneApp).(desktop.App)
 	if !ok {
-		log.Fatal("could not create desktop app")
+		s.Logger.Fatal("could not create desktop app")
 	}
 
 	// create main menu
-	systray.MainMenu.fyneMenu = fyne.NewMenu(systray.title)
+	s.MainMenu.fyneMenu = fyne.NewMenu(s.title)
 
 	// set main menu onto the desktop app created
-	desk.SetSystemTrayMenu(systray.MainMenu.fyneMenu)
+	desk.SetSystemTrayMenu(s.MainMenu.fyneMenu)
 
-	(*systray.fyneApp).Lifecycle().SetOnStarted(func() {
+	(*s.fyneApp).Lifecycle().SetOnStarted(func() {
 		// set default icon on main menu
-		desk.SetSystemTrayIcon(systray.icon)
+		desk.SetSystemTrayIcon(s.icon)
 	})
 }
 
-func (systray *Systray) SetIcon(icon fyne.Resource) {
-	systray.icon = icon
+func (s *Systray) SetIcon(icon fyne.Resource) {
+	s.icon = icon
 
-	desk, ok := (*systray.fyneApp).(desktop.App)
+	desk, ok := (*s.fyneApp).(desktop.App)
 	if !ok {
-		log.Fatal("could not get desktop app")
+		s.Logger.Fatal("could not get desktop app")
 	}
 
-	desk.SetSystemTrayIcon(systray.icon)
+	desk.SetSystemTrayIcon(s.icon)
 }
 
-func (systray *Systray) Setup() {
-	systray.createApp()
+func (s *Systray) Setup() {
+	s.createApp()
 }
 
-func (systray *Systray) Sync() {
-	systray.MainMenu.sync()
+func (s *Systray) Sync() {
+	s.MainMenu.sync(s.Logger)
 }
 
-func (systray Systray) Run() {
-	if systray.fyneApp == nil {
-		log.Fatal("systray not setup yet")
+func (s Systray) Run() {
+	if s.fyneApp == nil {
+		s.Logger.Fatal("systray not setup yet")
 	}
 
-	(*systray.fyneApp).Run()
+	(*s.fyneApp).Run()
 }
 
-func (menu *SystrayMenu) sync() {
+func (menu *SystrayMenu) sync(logger *log.Logger) {
 	menu.fyneMenu.Items = []*fyne.MenuItem{}
 
 	for _, item := range menu.Items {
@@ -69,7 +69,12 @@ func (menu *SystrayMenu) sync() {
 		case Button:
 			item := (item).(SystrayButton)
 
-			menuItem := fyne.NewMenuItem(item.Title, item.Action)
+			menuItem := fyne.NewMenuItem(item.Title, func() {
+				err := item.Action()
+				if err != nil {
+					logger.Fatal(err)
+				}
+			})
 			menu.fyneMenu.Items = append(menu.fyneMenu.Items, menuItem)
 
 		case Separator:
@@ -84,7 +89,7 @@ func (menu *SystrayMenu) sync() {
 			menu.fyneMenu.Items = append(menu.fyneMenu.Items, menuItem)
 
 			item.Submenu.fyneMenu = menuItem.ChildMenu
-			item.Submenu.sync()
+			item.Submenu.sync(logger)
 
 		}
 	}

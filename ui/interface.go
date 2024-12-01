@@ -1,6 +1,10 @@
 package ui
 
-import "fyne.io/fyne/v2"
+import (
+	"log"
+
+	"fyne.io/fyne/v2"
+)
 
 type Itemable interface {
 	Type() ItemType
@@ -28,6 +32,7 @@ type Systray struct {
 	title    string
 	icon     fyne.Resource
 	MainMenu *SystrayMenu
+	Logger   *log.Logger
 }
 
 type SystrayMenu struct {
@@ -37,7 +42,7 @@ type SystrayMenu struct {
 
 type SystrayButton struct {
 	Title  string
-	Action func()
+	Action func() error
 }
 
 func (SystrayButton) Type() ItemType {

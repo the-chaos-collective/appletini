@@ -33,7 +33,13 @@ tasks:
       - task: clean
       - go build -o dist/main *.go
       - sudo chmod +x ./dist/main
+      - cp config.json dist/
       - ./dist/main
+  run_built:
+    desc: runs the build binary
+    dir: dist
+    cmds:
+      - ./main
     #silent: true
   clean:
     desc: remove dist files

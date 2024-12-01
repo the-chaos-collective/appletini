@@ -21,7 +21,7 @@ func AuthorizedGraphQLQuery[ResponseType interface{}](client GraphQLClient, quer
 
 	err := gql.Run(context.Background(), req, &response)
 	if err != nil {
-		return fmt.Errorf("error fetching PRs: %w", err)
+		return fmt.Errorf("error executing GraphQL query: %w", err)
 	}
 
 	return nil
