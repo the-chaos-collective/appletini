@@ -56,7 +56,7 @@ func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRe
 			ReviewDecision: "CHANGES_REQUESTED",
 		},
 	}
-	prMap["foo"] = []gitter.PullRequest{
+	prMap["label_0"] = []gitter.PullRequest{
 		{
 			Number:      3,
 			Title:       "Example PR 3",
@@ -64,7 +64,7 @@ func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRe
 			BaseRefName: "to-branch",
 		},
 	}
-	prMap["bar"] = []gitter.PullRequest{
+	prMap["repo_0"] = []gitter.PullRequest{
 		{
 			Number:      4,
 			Title:       "Example PR 4",
@@ -74,6 +74,14 @@ func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRe
 		{
 			Number:      5,
 			Title:       "Example PR 5",
+			HeadRefName: "from-branch",
+			BaseRefName: "to-branch",
+		},
+	}
+	prMap["author_0"] = []gitter.PullRequest{
+		{
+			Number:      6,
+			Title:       "Example PR 6",
 			HeadRefName: "from-branch",
 			BaseRefName: "to-branch",
 		},
