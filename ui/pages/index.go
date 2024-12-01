@@ -64,6 +64,10 @@ func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemabl
 				Status:      status,
 			}.Build())
 
+			// TODO: Perhaps don't look at all tracked PRs
+			// Only look at personal maybe?
+			// Or anything related to the user
+
 			if status.ShowGreenIcon {
 				showGreenIcon = true
 			}
