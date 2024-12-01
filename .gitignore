@@ -1,4 +1,5 @@
 config.json
+config.*.json
 graphql.config.json
 .DS_Store
 /dist/

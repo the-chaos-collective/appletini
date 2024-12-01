@@ -1,4 +1,5 @@
 {
+  "__version": 2,
   "github": {
     "gqlAPI": "https://api.github.com/graphql",
     "token": "GITHUB_ACCESS_TOKEN"
