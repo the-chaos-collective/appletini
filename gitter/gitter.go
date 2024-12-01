@@ -1,39 +1,10 @@
 package gitter
 
 import (
-	"context"
-	"fmt"
+	"log"
 
-	"github.com/machinebox/graphql"
+	"appletini/status"
 )
-
-func ApprovePullRequest(url string, token string, ctx context.Context, id string, body string) error { // TODO: fix the graphql injection xD
-
-	req := graphql.NewRequest(fmt.Sprintf(`mutation {
-		addPullRequestReview(input: {
-		  pullRequestId: "%s",
-		  event: APPROVE,
-		  body: "%s"
-		}) {
-		  pullRequestReview {
-			id
-			url
-		  }
-		}
-	  }`, id, body))
-
-	client := graphql.NewClient(url)
-	// TODO: do the same for organization
-
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %v", token))
-
-	err := client.Run(context.Background(), req, nil)
-	if err != nil {
-		return fmt.Errorf("error approving PR: %w", err)
-	}
-
-	return nil
-}
 
 type PullRequest struct {
 	Title       string `yaml:"title"`
@@ -49,4 +20,30 @@ type PullRequest struct {
 
 	Mergeable string         `yaml:"mergeable"`
 	_         map[string]any `yaml:",inline"`
+}
+
+func (pr PullRequest) ReviewState() status.ReviewState {
+	switch pr.ReviewDecision {
+	case "APPROVED":
+		return status.ReviewState_Approved
+	case "REVIEW_REQUIRED":
+		return status.ReviewState_RequiresReview
+	case "CHANGES_REQUESTED":
+		return status.ReviewState_ChangesRequested
+	case "":
+		return status.ReviewState_NoReviewRequired
+	}
+	log.Printf("Missing review state: %s", pr.ReviewDecision)
+	return status.ReviewState_Unknown
+}
+
+func (pr PullRequest) MergeableState() status.MergeableState {
+	switch pr.Mergeable {
+	case "MERGEABLE":
+		return status.MergeableState_Mergeable
+	case "CONFLICTING":
+		return status.MergeableState_Conflict
+	}
+	log.Printf("Missing mergeable state: %s", pr.ReviewDecision)
+	return status.MergeableState_Unknown
 }
