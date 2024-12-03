@@ -12,7 +12,12 @@ import (
 	"appletini/logging"
 )
 
-func loadAsVersion(filename string, version int) (migration_types.Migratable, error) {
+type Migrator struct {
+	DumpMigrations bool
+	Logger         logging.Logger
+}
+
+func (m Migrator) loadAsVersion(filename string, version int) (migration_types.Migratable, error) {
 	switch version {
 	case 0:
 		fallthrough
@@ -25,16 +30,16 @@ func loadAsVersion(filename string, version int) (migration_types.Migratable, er
 	return nil, fmt.Errorf("no loader for config v%d", version)
 }
 
-func MigrateTo(logger logging.Logger, filename string, targetVersion int, dumpMigrations bool) (migration_types.Migratable, error) {
+func (m Migrator) MigrateTo(filename string, targetVersion int) (migration_types.Migratable, error) {
 	logged := false
 
 	for {
-		version, err := readVersion(filename)
+		version, err := m.readVersion(filename)
 		if err != nil {
 			return nil, fmt.Errorf("determining current version: %w", err)
 		}
 
-		current, err := loadAsVersion(filename, version)
+		current, err := m.loadAsVersion(filename, version)
 		if err != nil {
 			return nil, fmt.Errorf("loading config (as v%d): %w", version, err)
 		}
@@ -44,7 +49,7 @@ func MigrateTo(logger logging.Logger, filename string, targetVersion int, dumpMi
 		}
 
 		if !logged {
-			logger.Info("Migrating config", "from", fmt.Sprintf("v%d", version), "to", fmt.Sprintf("v%d", targetVersion))
+			m.Logger.Info("Migrating config", "from", fmt.Sprintf("v%d", version), "to", fmt.Sprintf("v%d", targetVersion))
 			logged = true
 		}
 
@@ -53,7 +58,7 @@ func MigrateTo(logger logging.Logger, filename string, targetVersion int, dumpMi
 			return nil, fmt.Errorf("migrating config: %w", err)
 		}
 
-		if dumpMigrations {
+		if m.DumpMigrations {
 			err = os.Rename(filename, strings.ReplaceAll(filename, ".json", fmt.Sprintf(".v%d.json", version)))
 			if err != nil {
 				return nil, fmt.Errorf("renaming old config: %w", err)
@@ -68,7 +73,7 @@ func MigrateTo(logger logging.Logger, filename string, targetVersion int, dumpMi
 	}
 }
 
-func readVersion(filename string) (int, error) {
+func (m Migrator) readVersion(filename string) (int, error) {
 	type ConfigVersion struct {
 		Version int `json:"__version"`
 	}

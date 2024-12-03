@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"appletini/config"
+	"appletini/config/migration"
 	"appletini/gitter"
 	"appletini/logging"
 	"appletini/ui/pages"
@@ -41,15 +42,26 @@ func setupProviders(deps *dig.Container) error {
 		return err
 	}
 
+	// * Migrator
+	err = deps.Provide(func(feat FeatureFlags, logger logging.Logger) migration.Migrator {
+		return migration.Migrator{
+			DumpMigrations: feat.DumpMigrations,
+			Logger:         logger,
+		}
+	})
+	if err != nil {
+		return err
+	}
+
 	// * Config
 	err = deps.Provide(func(
-		feat FeatureFlags,
 		globals Globals,
+		migrator migration.Migrator,
 		logger logging.Logger,
 	) (config.Config, error) {
 		loader := config.Loader{
-			DumpMigrations: feat.DumpMigrations,
-			Logger:         logger,
+			Migrator: migrator,
+			Logger:   logger,
 		}
 
 		return loader.Load(globals.ConfigPath)

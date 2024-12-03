@@ -15,11 +15,11 @@ type (
 	Tracking = v2.Tracking
 )
 
-var LatestVersion int = 2
+const LATEST_VERSION int = 2
 
 type Loader struct {
-	DumpMigrations bool
-	Logger         logging.Logger
+	Migrator migration.Migrator
+	Logger   logging.Logger
 }
 
 func (l Loader) Load(filename string) (Config, error) {
@@ -33,7 +33,7 @@ func (l Loader) Load(filename string) (Config, error) {
 		}
 	}
 
-	config, err := migration.MigrateTo(l.Logger, filename, LatestVersion, l.DumpMigrations)
+	config, err := l.Migrator.MigrateTo(filename, LATEST_VERSION)
 	if err != nil {
 		return Config{}, err
 	}
