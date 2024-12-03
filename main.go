@@ -4,54 +4,69 @@ import (
 	_ "embed"
 	"log"
 
-	"git_applet/config"
-	"git_applet/gitter"
-	"git_applet/polling"
-	"git_applet/ui/pages"
+	"go.uber.org/dig"
+
+	"appletini/config"
+	"appletini/gitter"
+	"appletini/logging"
+	"appletini/polling"
+	"appletini/ui/pages"
 )
 
+type PRChan chan map[string][]gitter.PullRequest
+
 func main() {
-	// * Logger
-	logger := log.Default()
+	deps := dig.New()
 
-	// * Config
-	config, err := config.Load(CONFIG_FILE)
-	ehp(err, logger)
+	err := setupProviders(deps)
+	ehp(deps, err)
 
-	// * GraphQL Client
-	gqlClient := &gitter.GraphQLClient{
-		Url:   config.Github.GraphQL,
-		Token: config.Computed.GithubToken,
-	}
+	err = setupPolling(deps)
+	ehp(deps, err)
 
-	// * Polling
-	poller := polling.Polling{
-		Logger:    logger,
-		GqlClient: gqlClient,
-		Config:    config,
-	}
-
-	prs := make(chan map[string][]gitter.PullRequest)
-
-	mockQueries := false
-	err = poller.Setup(mockQueries)
-	ehp(err, logger)
-
-	go poller.PollPRs(prs)
-
-	// * UI
-	indexPage := pages.IndexPage{
-		PullRequests: prs,
-		Darkmode:     config.Darkmode,
-		Trackers:     config.Tracking,
-		Logger:       logger,
-	}
-
-	indexPage.Run()
+	err = render(deps)
+	ehp(deps, err)
 }
 
-func ehp(err error, logger *log.Logger) {
+func render(deps *dig.Container) error {
+	return deps.Invoke(func(indexPage pages.IndexPage, logger logging.Logger) {
+		logger.Info("Running")
+		indexPage.Run()
+	})
+}
+
+func setupPolling(deps *dig.Container) error {
+	return deps.Invoke(func(
+		flags FeatureFlags,
+		logger logging.Logger,
+		gqlClient *gitter.GraphQLClient,
+		conf config.Config,
+		prs PRChan,
+	) error {
+		poller := polling.Polling{
+			Logger:    logger,
+			GqlClient: gqlClient,
+			Config:    conf,
+		}
+
+		err := poller.Setup(flags.MockQueries)
+		if err != nil {
+			return err
+		}
+
+		go poller.PollPRs(prs)
+
+		return nil
+	})
+}
+
+func ehp(deps *dig.Container, err error) {
 	if err != nil {
-		logger.Fatal(err)
+		err := deps.Invoke(func(logger logging.Logger) {
+			logger.Fatalf("Runtime error: %v\n", err)
+		})
+		if err != nil {
+			log.Fatalf("Runtime error: %v\n", err)
+		}
 	}
 }

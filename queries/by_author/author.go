@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"git_applet/gitter"
+	"appletini/gitter"
 )
 
 type Result map[string]NodeMap

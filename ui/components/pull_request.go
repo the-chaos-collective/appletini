@@ -4,18 +4,17 @@ import (
 	"fmt"
 	"strings"
 
-	"git_applet/ui"
+	"appletini/ui"
 )
 
 type PullRequest struct {
-	Number          int
-	Title           string
-	Mergeable       string
-	ReviewDecision  string
-	HeadRefName     string
-	BaseRefName     string
-	RepoBranchRules struct{}
-	Permalink       string
+	Number         int
+	Title          string
+	Mergeable      string
+	ReviewDecision string
+	HeadRefName    string
+	BaseRefName    string
+	Permalink      string
 }
 
 type Status struct {
@@ -89,10 +88,9 @@ func (pr PullRequest) makeFullTitle() string {
 
 func (pr PullRequest) Build() ui.Itemable {
 	submenu := PullRequestOptions{
-		Mergeable:       pr.Mergeable,
-		ReviewDecision:  pr.ReviewDecision,
-		RepoBranchRules: pr.RepoBranchRules,
-		Permalink:       pr.Permalink,
+		Mergeable:      pr.Mergeable,
+		ReviewDecision: pr.ReviewDecision,
+		Permalink:      pr.Permalink,
 	}.Build()
 
 	return ui.SystraySubmenu{

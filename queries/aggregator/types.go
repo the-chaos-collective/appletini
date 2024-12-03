@@ -1,13 +1,12 @@
 package aggregator
 
 import (
-	"log"
-
-	"git_applet/queries"
+	"appletini/logging"
+	"appletini/queries"
 )
 
 type QueryAggregator struct {
 	Queries []queries.Query
 	Mock    bool
-	Logger  *log.Logger
+	Logger  logging.Logger
 }

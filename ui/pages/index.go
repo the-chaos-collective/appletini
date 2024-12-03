@@ -2,16 +2,16 @@ package pages
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
 
-	"git_applet/config"
-	"git_applet/gitter"
-	"git_applet/ui"
-	"git_applet/ui/components"
-	"git_applet/ui/icons"
+	"appletini/config"
+	"appletini/gitter"
+	"appletini/logging"
+	"appletini/ui"
+	"appletini/ui/components"
+	"appletini/ui/icons"
 
 	"fyne.io/fyne/v2"
 )
@@ -21,7 +21,7 @@ type IndexPage struct {
 	Darkmode     bool
 	PullRequests <-chan map[string][]gitter.PullRequest
 	Trackers     config.Tracking
-	Logger       *log.Logger
+	Logger       logging.Logger
 }
 
 func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {

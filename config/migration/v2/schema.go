@@ -1,7 +1,8 @@
-package config
+package v2
 
 type Config struct {
-	Computed  Computed
+	Computed  Computed     `json:"-"`
+	Version   int          `json:"__version"`
 	Github    GithubConfig `json:"github"`
 	Poll      PollConfig   `json:"poll"`
 	Tracking  Tracking     `json:"tracking"`
@@ -19,13 +20,10 @@ type PollConfig struct {
 }
 
 type Tracking struct {
-	Personal       bool       `json:"personal"`
-	ByLabel        LabeledSet `json:"byLabel"`
-	ByRepo         RepoSet    `json:"byRepo"`
-	ByAuthor       AuthorSet  `json:"byAuthor"`
-	CommentsAmount string     `json:"commentsAmount"`
-	ReviewAmount   string     `json:"reviewAmount"`
-	PrAmount       string     `json:"prAmount"`
+	Personal bool       `json:"personal"`
+	ByLabel  LabeledSet `json:"byLabel"`
+	ByRepo   RepoSet    `json:"byRepo"`
+	ByAuthor AuthorSet  `json:"byAuthor"`
 }
 
 type Author struct {

@@ -3,15 +3,14 @@ package components
 import (
 	"fmt"
 
-	"git_applet/actions"
-	"git_applet/ui"
+	"appletini/actions"
+	"appletini/ui"
 )
 
 type PullRequestOptions struct {
-	Mergeable       string
-	ReviewDecision  string
-	RepoBranchRules struct{}
-	Permalink       string
+	Mergeable      string
+	ReviewDecision string
+	Permalink      string
 }
 
 func (info PullRequestOptions) Build() ui.SystrayMenu {
