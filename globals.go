@@ -4,7 +4,7 @@ type Globals struct {
 	ConfigPath string
 }
 
-func LoadGlobals() Globals {
+func globals() Globals {
 	return Globals{
 		ConfigPath: "config.json",
 	}

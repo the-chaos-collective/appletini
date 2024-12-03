@@ -5,7 +5,7 @@ type FeatureFlags struct {
 	MockQueries    bool
 }
 
-func LoadFeatureFlags() FeatureFlags {
+func featureFlags() FeatureFlags {
 	return FeatureFlags{
 		DumpMigrations: false,
 		MockQueries:    false,
