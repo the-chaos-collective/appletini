@@ -17,10 +17,15 @@ type (
 
 var LatestVersion int = 2
 
-func Load(filename string, dumpMigrations bool, logger *log.Logger) (Config, error) {
+type Loader struct {
+	DumpMigrations bool
+	Logger         *log.Logger
+}
+
+func (l Loader) Load(filename string) (Config, error) {
 	_, err := os.ReadFile(filename)
 	if err != nil { // If no config exists
-		logger.Println("Generating default config")
+		l.Logger.Println("Generating default config")
 		defaultConfig := v1.Default() // Load default v1
 		err = defaultConfig.Save(filename)
 		if err != nil {
@@ -28,7 +33,7 @@ func Load(filename string, dumpMigrations bool, logger *log.Logger) (Config, err
 		}
 	}
 
-	config, err := migration.MigrateTo(filename, LatestVersion, dumpMigrations, logger)
+	config, err := migration.MigrateTo(l.Logger, filename, LatestVersion, l.DumpMigrations)
 	if err != nil {
 		return Config{}, err
 	}

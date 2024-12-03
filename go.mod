@@ -5,6 +5,7 @@ go 1.23
 require (
 	fyne.io/fyne/v2 v2.4.3
 	github.com/machinebox/graphql v0.2.2
+	go.uber.org/dig v1.18.0
 )
 
 require (

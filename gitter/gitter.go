@@ -47,6 +47,6 @@ type PullRequest struct {
 	ReviewDecision string `yaml:"reviewDecision"`
 	Id             string `yaml:"id"`
 
-	Mergeable  string         `yaml:"mergeable"`
-	Remainder_ map[string]any `yaml:",inline"`
+	Mergeable string         `yaml:"mergeable"`
+	_         map[string]any `yaml:",inline"`
 }

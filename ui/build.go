@@ -8,10 +8,12 @@ import (
 
 func MakeSystray(title string, icon fyne.Resource, logger *log.Logger) Systray {
 	return Systray{
-		title: title,
-		icon:  icon,
+		fyneApp: nil,
+		title:   title,
+		icon:    icon,
 		MainMenu: &SystrayMenu{
-			Items: make([]Itemable, 0),
+			fyneMenu: nil,
+			Items:    make([]Itemable, 0),
 		},
 		Logger: logger,
 	}
