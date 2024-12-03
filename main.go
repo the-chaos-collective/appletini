@@ -6,10 +6,11 @@ import (
 
 	"go.uber.org/dig"
 
-	"git_applet/config"
-	"git_applet/gitter"
-	"git_applet/polling"
-	"git_applet/ui/pages"
+	"appletini/config"
+	"appletini/gitter"
+	"appletini/logging"
+	"appletini/polling"
+	"appletini/ui/pages"
 )
 
 type PRChan chan map[string][]gitter.PullRequest
@@ -18,17 +19,18 @@ func main() {
 	deps := dig.New()
 
 	err := setupProviders(deps)
-	ehp(err)
+	ehp(deps, err)
 
 	err = setupPolling(deps)
-	ehp(err)
+	ehp(deps, err)
 
 	err = render(deps)
-	ehp(err)
+	ehp(deps, err)
 }
 
 func render(deps *dig.Container) error {
-	return deps.Invoke(func(indexPage pages.IndexPage) {
+	return deps.Invoke(func(indexPage pages.IndexPage, logger logging.Logger) {
+		logger.Info("Running")
 		indexPage.Run()
 	})
 }
@@ -36,7 +38,7 @@ func render(deps *dig.Container) error {
 func setupPolling(deps *dig.Container) error {
 	return deps.Invoke(func(
 		flags FeatureFlags,
-		logger *log.Logger,
+		logger logging.Logger,
 		gqlClient *gitter.GraphQLClient,
 		conf config.Config,
 		prs PRChan,
@@ -58,8 +60,13 @@ func setupPolling(deps *dig.Container) error {
 	})
 }
 
-func ehp(err error) {
+func ehp(deps *dig.Container, err error) {
 	if err != nil {
-		log.Fatalf("Runtime error: %v\n", err)
+		err := deps.Invoke(func(logger logging.Logger) {
+			logger.Fatalf("Runtime error: %v\n", err)
+		})
+		if err != nil {
+			log.Fatalf("Runtime error: %v\n", err)
+		}
 	}
 }

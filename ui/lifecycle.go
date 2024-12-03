@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"log"
+	"appletini/logging"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -61,7 +61,7 @@ func (s Systray) Run() {
 	(*s.fyneApp).Run()
 }
 
-func (menu *SystrayMenu) sync(logger *log.Logger) {
+func (menu *SystrayMenu) sync(logger logging.Logger) {
 	menu.fyneMenu.Items = []*fyne.MenuItem{}
 
 	for _, item := range menu.Items {

@@ -1,12 +1,15 @@
 package main
 
 import (
-	"log"
+	"os"
+	"time"
 
-	"git_applet/config"
-	"git_applet/gitter"
-	"git_applet/ui/pages"
+	"appletini/config"
+	"appletini/gitter"
+	"appletini/logging"
+	"appletini/ui/pages"
 
+	"github.com/charmbracelet/log"
 	"go.uber.org/dig"
 )
 
@@ -24,7 +27,16 @@ func setupProviders(deps *dig.Container) error {
 	}
 
 	// * Logger
-	err = deps.Provide(log.Default)
+	err = deps.Provide(func(globals Globals) logging.Logger {
+		//exhaustruct:ignore
+		return logging.NewCharm(log.NewWithOptions(os.Stderr, log.Options{
+			Level:           globals.LogLevel,
+			ReportCaller:    false,
+			ReportTimestamp: true,
+			TimeFormat:      time.DateTime,
+			Prefix:          "Appletini",
+		}))
+	})
 	if err != nil {
 		return err
 	}
@@ -33,7 +45,7 @@ func setupProviders(deps *dig.Container) error {
 	err = deps.Provide(func(
 		feat FeatureFlags,
 		globals Globals,
-		logger *log.Logger,
+		logger logging.Logger,
 	) (config.Config, error) {
 		loader := config.Loader{
 			DumpMigrations: feat.DumpMigrations,
@@ -68,7 +80,7 @@ func setupProviders(deps *dig.Container) error {
 	// * UI
 	err = deps.Provide(func(
 		conf config.Config,
-		logger *log.Logger,
+		logger logging.Logger,
 		prs PRChan,
 	) pages.IndexPage {
 		return pages.IndexPage{

@@ -20,7 +20,7 @@ func Load(filename string) (Config, error) {
 		return Config{}, fmt.Errorf("reading config file: %w", err)
 	}
 
-	config := Config{}
+	var config Config
 
 	err = json.Unmarshal(file_contents, &config)
 	if err != nil {

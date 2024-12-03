@@ -3,7 +3,7 @@ package personal
 import (
 	"fmt"
 
-	"git_applet/gitter"
+	"appletini/gitter"
 )
 
 var ViewerQuery = `query fetchPRs {

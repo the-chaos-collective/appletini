@@ -1,7 +1,7 @@
 package v2
 
 import (
-	"git_applet/config/migration/migration_types"
+	"appletini/config/migration/migration_types"
 )
 
 func (config Config) ToNext() (migration_types.Migratable, error) {

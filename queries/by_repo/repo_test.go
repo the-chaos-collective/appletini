@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"git_applet/queries/by_repo"
+	"appletini/queries/by_repo"
 )
 
 type testConfig struct {

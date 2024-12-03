@@ -1,12 +1,12 @@
 package ui
 
 import (
-	"log"
+	"appletini/logging"
 
 	"fyne.io/fyne/v2"
 )
 
-func MakeSystray(title string, icon fyne.Resource, logger *log.Logger) Systray {
+func MakeSystray(title string, icon fyne.Resource, logger logging.Logger) Systray {
 	return Systray{
 		fyneApp: nil,
 		title:   title,

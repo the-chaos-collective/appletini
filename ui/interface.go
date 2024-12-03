@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"log"
+	"appletini/logging"
 
 	"fyne.io/fyne/v2"
 )
@@ -32,7 +32,7 @@ type Systray struct {
 	title    string
 	icon     fyne.Resource
 	MainMenu *SystrayMenu
-	Logger   *log.Logger
+	Logger   logging.Logger
 }
 
 type SystrayMenu struct {

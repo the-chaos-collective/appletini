@@ -3,8 +3,8 @@ package components
 import (
 	"fmt"
 
-	"git_applet/actions"
-	"git_applet/ui"
+	"appletini/actions"
+	"appletini/ui"
 )
 
 type PullRequestOptions struct {

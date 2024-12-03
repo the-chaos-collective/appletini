@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"git_applet/ui"
+	"appletini/ui"
 )
 
 type PullRequest struct {

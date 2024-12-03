@@ -3,8 +3,8 @@ package aggregator
 import (
 	"maps"
 
-	"git_applet/gitter"
-	"git_applet/queries/mock"
+	"appletini/gitter"
+	"appletini/queries/mock"
 )
 
 func (qa QueryAggregator) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
@@ -14,7 +14,7 @@ func (qa QueryAggregator) GetAll(client gitter.GraphQLClient) (map[string][]gitt
 	if qa.Mock {
 		prtmp, err := mock.MockQuery{}.GetAll(client)
 		if err != nil {
-			qa.Logger.Printf("When polling for PRs: %v", err)
+			qa.Logger.Errorf("When polling for PRs: %v", err)
 		}
 
 		return prtmp, nil
@@ -24,7 +24,7 @@ func (qa QueryAggregator) GetAll(client gitter.GraphQLClient) (map[string][]gitt
 
 		prtmp, err := query.GetAll(client)
 		if err != nil {
-			qa.Logger.Printf("When polling for PRs: %v", err)
+			qa.Logger.Errorf("When polling for PRs: %v", err)
 		}
 
 		maps.Copy(prMap, prtmp)

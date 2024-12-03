@@ -3,7 +3,7 @@ package by_label
 import (
 	"fmt"
 
-	"git_applet/gitter"
+	"appletini/gitter"
 )
 
 type Result map[string]LabelMap

@@ -3,11 +3,12 @@ package v1
 import (
 	"fmt"
 
-	"git_applet/config/migration/migration_types"
-	v2 "git_applet/config/migration/v2"
+	"appletini/config/migration/migration_types"
+	v2 "appletini/config/migration/v2"
 )
 
 func (config Config) ToNext() (migration_types.Migratable, error) {
+	//exhaustruct:ignore
 	new := v2.Config{
 		Version: 2,
 		Github: v2.GithubConfig{

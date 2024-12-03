@@ -3,13 +3,13 @@ package migration
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
-	"git_applet/config/migration/migration_types"
-	v1 "git_applet/config/migration/v1"
-	v2 "git_applet/config/migration/v2"
+	"appletini/config/migration/migration_types"
+	v1 "appletini/config/migration/v1"
+	v2 "appletini/config/migration/v2"
+	"appletini/logging"
 )
 
 func loadAsVersion(filename string, version int) (migration_types.Migratable, error) {
@@ -25,7 +25,7 @@ func loadAsVersion(filename string, version int) (migration_types.Migratable, er
 	return migration_types.NullConfig{}, fmt.Errorf("no loader for config v%d", version)
 }
 
-func MigrateTo(logger *log.Logger, filename string, targetVersion int, dumpMigrations bool) (migration_types.Migratable, error) {
+func MigrateTo(logger logging.Logger, filename string, targetVersion int, dumpMigrations bool) (migration_types.Migratable, error) {
 	logged := false
 
 	for {
@@ -44,7 +44,7 @@ func MigrateTo(logger *log.Logger, filename string, targetVersion int, dumpMigra
 		}
 
 		if !logged {
-			logger.Printf("Migrating config (v%d -> v%d)\n", version, targetVersion)
+			logger.Info("Migrating config", "from", fmt.Sprintf("v%d", version), "to", fmt.Sprintf("v%d", targetVersion))
 			logged = true
 		}
 
@@ -78,7 +78,7 @@ func readVersion(filename string) (int, error) {
 		return -1, fmt.Errorf("reading config file: %w", err)
 	}
 
-	config := ConfigVersion{}
+	var config ConfigVersion
 
 	err = json.Unmarshal(file_contents, &config)
 	if err != nil {

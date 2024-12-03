@@ -2,12 +2,12 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 
-	"git_applet/config/migration"
-	v1 "git_applet/config/migration/v1"
-	v2 "git_applet/config/migration/v2"
+	"appletini/config/migration"
+	v1 "appletini/config/migration/v1"
+	v2 "appletini/config/migration/v2"
+	"appletini/logging"
 )
 
 type (
@@ -19,13 +19,13 @@ var LatestVersion int = 2
 
 type Loader struct {
 	DumpMigrations bool
-	Logger         *log.Logger
+	Logger         logging.Logger
 }
 
 func (l Loader) Load(filename string) (Config, error) {
 	_, err := os.ReadFile(filename)
 	if err != nil { // If no config exists
-		l.Logger.Println("Generating default config")
+		l.Logger.Info("Generating default config")
 		defaultConfig := v1.Default() // Load default v1
 		err = defaultConfig.Save(filename)
 		if err != nil {

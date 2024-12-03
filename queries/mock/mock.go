@@ -1,11 +1,13 @@
 package mock
 
 import (
-	"git_applet/gitter"
+	"appletini/gitter"
 )
 
 func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
 	prMap := map[string][]gitter.PullRequest{}
+
+	//exhaustruct:ignore
 	prMap["personal"] = []gitter.PullRequest{
 		{
 			Number:         1,
@@ -56,6 +58,7 @@ func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRe
 			ReviewDecision: "CHANGES_REQUESTED",
 		},
 	}
+	//exhaustruct:ignore
 	prMap["label_0"] = []gitter.PullRequest{
 		{
 			Number:      3,
@@ -64,6 +67,7 @@ func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRe
 			BaseRefName: "to-branch",
 		},
 	}
+	//exhaustruct:ignore
 	prMap["repo_0"] = []gitter.PullRequest{
 		{
 			Number:      4,
@@ -78,6 +82,7 @@ func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRe
 			BaseRefName: "to-branch",
 		},
 	}
+	//exhaustruct:ignore
 	prMap["author_0"] = []gitter.PullRequest{
 		{
 			Number:      6,
