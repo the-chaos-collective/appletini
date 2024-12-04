@@ -2,22 +2,22 @@ package polling
 
 import (
 	"fmt"
-	"log"
 	"time"
 
-	"git_applet/config"
-	"git_applet/gitter"
-	"git_applet/hasher"
-	"git_applet/queries"
-	"git_applet/queries/aggregator"
-	"git_applet/queries/by_author"
-	"git_applet/queries/by_label"
-	"git_applet/queries/by_repo"
-	"git_applet/queries/personal"
+	"appletini/config"
+	"appletini/gitter"
+	"appletini/hasher"
+	"appletini/logging"
+	"appletini/queries"
+	"appletini/queries/aggregator"
+	"appletini/queries/by_author"
+	"appletini/queries/by_label"
+	"appletini/queries/by_repo"
+	"appletini/queries/personal"
 )
 
 type Polling struct {
-	Logger          *log.Logger
+	Logger          logging.Logger
 	GqlClient       *gitter.GraphQLClient
 	Config          config.Config
 	queryAggregator queries.Query
@@ -134,7 +134,7 @@ func (p Polling) PollPRs(prs chan<- map[string][]gitter.PullRequest) {
 	for {
 		trackingPrs, err := p.queryAggregator.GetAll(*p.GqlClient)
 		if err != nil {
-			p.Logger.Printf("when polling for PRs: %v", err)
+			p.Logger.Errorf("When polling for PRs: %v", err)
 		}
 
 		hasher.Check(trackingPrs, prs)

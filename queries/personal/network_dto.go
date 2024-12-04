@@ -1,6 +1,6 @@
 package personal
 
-import "git_applet/gitter"
+import "appletini/gitter"
 
 type Response struct {
 	Viewer struct {

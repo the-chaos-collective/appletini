@@ -3,7 +3,7 @@ package personal
 import (
 	"fmt"
 
-	"git_applet/gitter"
+	"appletini/gitter"
 )
 
 var ViewerQuery = `query fetchPRs {
@@ -57,7 +57,7 @@ var ViewerQuery = `query fetchPRs {
 			}`
 
 func (Query) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
-	res := Response{}
+	var res Response
 
 	err := gitter.AuthorizedGraphQLQuery[Response](client, ViewerQuery, &res)
 	if err != nil {

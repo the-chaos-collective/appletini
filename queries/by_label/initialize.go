@@ -9,6 +9,7 @@ func MakeQuery(config Config) (Query, error) {
 	if len(config.Trackers) == 0 {
 		return Query{
 			shouldBeExecuted: false,
+			generatedQuery:   "",
 		}, nil
 	}
 

@@ -1,11 +1,13 @@
 package mock
 
 import (
-	"git_applet/gitter"
+	"appletini/gitter"
 )
 
 func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
 	prMap := map[string][]gitter.PullRequest{}
+
+	//exhaustruct:ignore
 	prMap["personal"] = []gitter.PullRequest{
 		{
 			Number:         1,
@@ -56,7 +58,8 @@ func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRe
 			ReviewDecision: "CHANGES_REQUESTED",
 		},
 	}
-	prMap["foo"] = []gitter.PullRequest{
+	//exhaustruct:ignore
+	prMap["label_0"] = []gitter.PullRequest{
 		{
 			Number:      3,
 			Title:       "Example PR 3",
@@ -64,7 +67,8 @@ func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRe
 			BaseRefName: "to-branch",
 		},
 	}
-	prMap["bar"] = []gitter.PullRequest{
+	//exhaustruct:ignore
+	prMap["repo_0"] = []gitter.PullRequest{
 		{
 			Number:      4,
 			Title:       "Example PR 4",
@@ -74,6 +78,15 @@ func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRe
 		{
 			Number:      5,
 			Title:       "Example PR 5",
+			HeadRefName: "from-branch",
+			BaseRefName: "to-branch",
+		},
+	}
+	//exhaustruct:ignore
+	prMap["author_0"] = []gitter.PullRequest{
+		{
+			Number:      6,
+			Title:       "Example PR 6",
 			HeadRefName: "from-branch",
 			BaseRefName: "to-branch",
 		},
