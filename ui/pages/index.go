@@ -46,11 +46,11 @@ var darkIcons = map[iconState]fyne.Resource{
 func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {
 	result := make([]ui.Itemable, 0, 5) // separator + quit button + 3 tracking types by default
 
+	showGreenIcon := false
+	showRedIcon := false
+
 	for key, value := range prs {
 		prList := make([]ui.Itemable, 0, 1) // at least one pr
-
-		showGreenIcon := false
-		showRedIcon := false
 
 		for _, pr := range value {
 			status := pr.PRInfo().Classify()
@@ -64,16 +64,14 @@ func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemabl
 				Status:      status,
 			}.Build())
 
-			// TODO: Perhaps don't look at all tracked PRs
-			// Only look at personal maybe?
-			// Or anything related to the user
+			if key == "personal" {
+				if status.ShowGreenIcon {
+					showGreenIcon = true
+				}
 
-			if status.ShowGreenIcon {
-				showGreenIcon = true
-			}
-
-			if status.ShowRedIcon {
-				showRedIcon = true
+				if status.ShowRedIcon {
+					showRedIcon = true
+				}
 			}
 		}
 

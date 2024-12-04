@@ -5,5 +5,5 @@ func ShowGreenIcon(input PRInfo) bool {
 }
 
 func ShowRedIcon(input PRInfo) bool {
-	return false
+	return input.Review == ReviewState_RequiresReview
 }
