@@ -1,11 +1,13 @@
 package status
 
 func Emoji(input PRInfo) []string {
-	if input.Mergeable == MergeableState_Mergeable && (input.Review == ReviewState_Approved || input.Review == ReviewState_NoReviewRequired) {
-		return []string{"🟢"}
-	}
+	emoji := make([]string, 0)
 
-	emoji := []string{"🔴"}
+	if (input.Mergeable == MergeableState_Mergeable || input.Mergeable == MergeableState_Unknown) && (input.Review == ReviewState_Approved || input.Review == ReviewState_NoReviewRequired) {
+		emoji = append(emoji, "🟢")
+	} else {
+		emoji = append(emoji, "🔴")
+	}
 
 	switch input.Mergeable {
 	case MergeableState_Mergeable:

@@ -43,8 +43,10 @@ func (pr PullRequest) mergeableState() status.MergeableState {
 		return status.MergeableState_Mergeable
 	case "CONFLICTING":
 		return status.MergeableState_Conflict
+	case "UNKNOWN":
+		return status.MergeableState_Unknown
 	}
-	log.Printf("Missing mergeable state: %s", pr.ReviewDecision)
+	log.Printf("Missing mergeable state: %s", pr.Mergeable)
 	return status.MergeableState_Unknown
 }
 
