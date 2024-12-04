@@ -8,9 +8,7 @@ import (
 )
 
 type PullRequestOptions struct {
-	Mergeable      string
-	ReviewDecision string
-	Permalink      string
+	Permalink string
 }
 
 func (info PullRequestOptions) Build() ui.SystrayMenu {
@@ -21,7 +19,7 @@ func (info PullRequestOptions) Build() ui.SystrayMenu {
 				Action: func() error {
 					err := actions.OpenLink(info.Permalink)
 					if err != nil {
-						return fmt.Errorf("error opening tracked PR in browser: %w", err)
+						return fmt.Errorf("error opening PR in browser: %w", err)
 					}
 					return nil
 				},
