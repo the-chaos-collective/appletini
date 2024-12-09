@@ -4,26 +4,32 @@ tasks:
   default:
     cmds:
       - task -l
-    #silent: true
+    silent: true    
+
   setup: # https://developer.fyne.io/started/
     desc: install necessary deps (ubuntu/debian)
     cmds:
       - sudo apt install golang gcc libgl1-mesa-dev xorg-dev -y
+
   test-env:
     desc: Test that system has necessary runtime deps installed
     cmds:
       - go run fyne.io/fyne/v2/cmd/fyne_demo@latest
+
   format:
     desc: format the project
     cmds:
       - go fmt ./...
+    silent: true
+
   run:
     desc: runs app
     deps:
       - format
     cmds:
-      - go run *.go
-    #silent: true
+      - APPLETINI_LOG_LEVEL=debug go run *.go
+    silent: true
+
   build:
     desc: build the this dope application
     deps:
@@ -34,13 +40,15 @@ tasks:
       - go build -o dist/main *.go
       - sudo chmod +x ./dist/main
       - cp config.json dist/
-      - ./dist/main
+      - APPLETINI_LOG_LEVEL=debug ./dist/main
+
   run_built:
     desc: runs the build binary
     dir: dist
     cmds:
-      - ./main
+      - APPLETINI_LOG_LEVEL=debug ./main
     #silent: true
+
   clean:
     desc: remove dist files
     cmds:
