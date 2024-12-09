@@ -13,7 +13,10 @@ import (
 	"appletini/ui/pages"
 )
 
-type PRChan chan map[string][]gitter.PullRequest
+type (
+	PRChan     chan map[string][]gitter.PullRequest
+	HasErrChan chan bool
+)
 
 func main() {
 	deps := dig.New()
@@ -42,6 +45,7 @@ func setupPolling(deps *dig.Container) error {
 		gqlClient *gitter.GraphQLClient,
 		conf config.Config,
 		prs PRChan,
+		hasErr HasErrChan,
 	) error {
 		poller := polling.Polling{
 			Logger:    logger,
@@ -54,7 +58,7 @@ func setupPolling(deps *dig.Container) error {
 			return err
 		}
 
-		go poller.PollPRs(prs)
+		go poller.PollPRs(prs, hasErr)
 
 		return nil
 	})
@@ -62,11 +66,11 @@ func setupPolling(deps *dig.Container) error {
 
 func ehp(deps *dig.Container, err error) {
 	if err != nil {
-		err := deps.Invoke(func(logger logging.Logger) {
+		log_err := deps.Invoke(func(logger logging.Logger) {
 			logger.Fatalf("Runtime error: %v\n", err)
 		})
-		if err != nil {
-			log.Fatalf("Runtime error: %v\n", err)
+		if log_err != nil {
+			log.Fatalf("Runtime error: %v\nAdditionally, there was an error retrieving logger: %v\n", err, log_err)
 		}
 	}
 }

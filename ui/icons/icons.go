@@ -69,3 +69,11 @@ var ResIconBothDark = &fyne.StaticResource{
 	StaticName:    "tray4_dark.png",
 	StaticContent: iconBothDark,
 }
+
+//go:embed assets/warning.png
+var iconWarning []byte
+
+var ResIconWarning = &fyne.StaticResource{
+	StaticName:    "warning.png",
+	StaticContent: iconWarning,
+}
