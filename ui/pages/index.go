@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"appletini/config"
 	"appletini/gitter"
@@ -17,27 +18,94 @@ import (
 )
 
 type IndexPage struct {
-	systray      *ui.Systray
-	Darkmode     bool
-	PullRequests <-chan map[string][]gitter.PullRequest
-	Trackers     config.Tracking
-	Logger       logging.Logger
+	systray       *ui.Systray
+	Darkmode      bool
+	PullRequests  <-chan map[string][]gitter.PullRequest
+	HasErr        <-chan bool
+	Trackers      config.Tracking
+	Logger        logging.Logger
+	showGreenIcon bool
+	showRedIcon   bool
 }
 
-func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {
-	result := make([]ui.Itemable, 0, 5) // separator + quit button + 3 tracking types by default
+type iconState struct {
+	green bool
+	red   bool
+	err   bool
+}
+
+// TODO: If this becomes unwieldy consider composing/generating these icon combinations during compile-time
+
+var lightIcons = map[iconState]fyne.Resource{
+	{false, false, false}: icons.ResIconDefault,
+	{false, true, false}:  icons.ResIconReviewable,
+	{true, false, false}:  icons.ResIconMergeable,
+	{true, true, false}:   icons.ResIconBoth,
+	// TODO: Icons with error
+	{false, false, true}: icons.ResIconWarning,
+	{false, true, true}:  icons.ResIconWarning,
+	{true, false, true}:  icons.ResIconWarning,
+	{true, true, true}:   icons.ResIconWarning,
+}
+
+var darkIcons = map[iconState]fyne.Resource{
+	{false, false, false}: icons.ResIconDefaultDark,
+	{false, true, false}:  icons.ResIconReviewableDark,
+	{true, false, false}:  icons.ResIconMergeableDark,
+	{true, true, false}:   icons.ResIconBothDark,
+	// TODO: Icons with error
+	{false, false, true}: icons.ResIconWarning,
+	{false, true, true}:  icons.ResIconWarning,
+	{true, false, true}:  icons.ResIconWarning,
+	{true, true, true}:   icons.ResIconWarning,
+}
+
+func (page IndexPage) renderIcons() {
+	for {
+		iconState := iconState{
+			green: page.showGreenIcon,
+			red:   page.showRedIcon,
+			err:   <-page.HasErr,
+		}
+
+		if page.Darkmode {
+			page.systray.SetIcon(darkIcons[iconState])
+		} else {
+			page.systray.SetIcon(lightIcons[iconState])
+		}
+	}
+}
+
+func (page *IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {
+	result := make([]ui.Itemable, 0, 6) // separator + quit button + 4 tracking types by default
+
+	page.showGreenIcon = false
+	page.showRedIcon = false
+
 	for key, value := range prs {
 		prList := make([]ui.Itemable, 0, 1) // at least one pr
+
 		for _, pr := range value {
+			status := pr.PRInfo().Classify()
+
 			prList = append(prList, components.PullRequest{
-				Title:          pr.Title,
-				Number:         pr.Number,
-				Mergeable:      pr.Mergeable,
-				ReviewDecision: pr.ReviewDecision,
-				HeadRefName:    pr.HeadRefName,
-				BaseRefName:    pr.BaseRefName,
-				Permalink:      pr.Permalink,
+				Title:       pr.Title,
+				Number:      pr.Number,
+				HeadRefName: pr.HeadRefName,
+				BaseRefName: pr.BaseRefName,
+				Permalink:   pr.Permalink,
+				Status:      status,
 			}.Build())
+
+			if key == "personal" {
+				if status.ShowGreenIcon {
+					page.showGreenIcon = true
+				}
+
+				if status.ShowRedIcon {
+					page.showRedIcon = true
+				}
+			}
 		}
 
 		groupTitle := ""
@@ -87,10 +155,19 @@ func (page IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemabl
 	return result
 }
 
-func (page IndexPage) run() {
+func (page IndexPage) renderMenu() {
 	for {
 		page.systray.MainMenu.Items = page.makeTree(<-page.PullRequests)
 		page.systray.Sync()
+	}
+}
+
+func (page IndexPage) render() {
+	go page.renderMenu()
+	go page.renderIcons()
+
+	for {
+		time.Sleep(1 * time.Microsecond)
 	}
 }
 
@@ -98,9 +175,9 @@ func (page IndexPage) Run() {
 	var icon fyne.Resource
 
 	if page.Darkmode {
-		icon = icons.ResIconDefault
-	} else {
 		icon = icons.ResIconDefaultDark
+	} else {
+		icon = icons.ResIconDefault
 	}
 
 	systray := ui.MakeSystray("Appletini", icon, page.Logger)
@@ -109,7 +186,7 @@ func (page IndexPage) Run() {
 
 	page.systray = &systray
 
-	go page.run()
+	go page.render()
 
 	page.systray.Run()
 }

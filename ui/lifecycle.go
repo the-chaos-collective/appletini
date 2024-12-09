@@ -28,8 +28,9 @@ func (s *Systray) createApp() {
 	// set main menu onto the desktop app created
 	desk.SetSystemTrayMenu(s.MainMenu.fyneMenu)
 
+	// set default icon on main menu
+	desk.SetSystemTrayIcon(s.icon)
 	(*s.fyneApp).Lifecycle().SetOnStarted(func() {
-		// set default icon on main menu
 		desk.SetSystemTrayIcon(s.icon)
 	})
 }

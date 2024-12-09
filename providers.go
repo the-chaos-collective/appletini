@@ -35,7 +35,7 @@ func setupProviders(deps *dig.Container) error {
 			ReportCaller:    false,
 			ReportTimestamp: true,
 			TimeFormat:      time.DateTime,
-			Prefix:          "Appletini",
+			Prefix:          globals.LogPrefix,
 		}))
 	})
 	if err != nil {
@@ -89,14 +89,24 @@ func setupProviders(deps *dig.Container) error {
 		return err
 	}
 
+	// * Error Channel
+	err = deps.Provide(func() HasErrChan {
+		return make(HasErrChan)
+	})
+	if err != nil {
+		return err
+	}
+
 	// * UI
 	err = deps.Provide(func(
 		conf config.Config,
 		logger logging.Logger,
 		prs PRChan,
+		hasErr HasErrChan,
 	) pages.IndexPage {
 		return pages.IndexPage{
 			PullRequests: prs,
+			HasErr:       hasErr,
 			Darkmode:     conf.Darkmode,
 			Trackers:     conf.Tracking,
 			Logger:       logger,

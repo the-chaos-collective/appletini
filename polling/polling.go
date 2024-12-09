@@ -127,14 +127,18 @@ func (p *Polling) Setup(mock bool) error {
 	return nil
 }
 
-func (p Polling) PollPRs(prs chan<- map[string][]gitter.PullRequest) {
+func (p Polling) PollPRs(prs chan<- map[string][]gitter.PullRequest, hasErr chan<- bool) {
 	hasher := hasher.Hasher{
 		Logger: p.Logger,
 	}
+
 	for {
 		trackingPrs, err := p.queryAggregator.GetAll(*p.GqlClient)
 		if err != nil {
 			p.Logger.Errorf("When polling for PRs: %v", err)
+			hasErr <- true
+		} else {
+			hasErr <- false
 		}
 
 		hasher.Check(trackingPrs, prs)
