@@ -14,8 +14,10 @@ import (
 )
 
 type (
-	PRChan     chan map[string][]gitter.PullRequest
-	HasErrChan chan bool
+	PRChan            chan map[string][]gitter.PullRequest
+	HasErrChan        chan bool
+	ShowGreenIconChan chan bool
+	ShowRedIconChan   chan bool
 )
 
 func main() {

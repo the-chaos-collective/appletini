@@ -21,11 +21,11 @@ type IndexPage struct {
 	systray       *ui.Systray
 	Darkmode      bool
 	PullRequests  <-chan map[string][]gitter.PullRequest
-	HasErr        <-chan bool
+	HasErr        chan bool
 	Trackers      config.Tracking
 	Logger        logging.Logger
-	showGreenIcon bool
-	showRedIcon   bool
+	ShowGreenIcon chan bool
+	ShowRedIcon   chan bool
 }
 
 type iconState struct {
@@ -61,11 +61,20 @@ var darkIcons = map[iconState]fyne.Resource{
 }
 
 func (page IndexPage) renderIcons() {
+	iconState := iconState{
+		green: false,
+		red:   false,
+		err:   false,
+	}
+
 	for {
-		iconState := iconState{
-			green: page.showGreenIcon,
-			red:   page.showRedIcon,
-			err:   <-page.HasErr,
+		select {
+		case status := <-page.ShowGreenIcon:
+			iconState.green = status
+		case status := <-page.ShowRedIcon:
+			iconState.red = status
+		case status := <-page.HasErr:
+			iconState.err = status
 		}
 
 		if page.Darkmode {
@@ -78,9 +87,6 @@ func (page IndexPage) renderIcons() {
 
 func (page *IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {
 	result := make([]ui.Itemable, 0, 6) // separator + quit button + 4 tracking types by default
-
-	page.showGreenIcon = false
-	page.showRedIcon = false
 
 	for key, value := range prs {
 		prList := make([]ui.Itemable, 0, 1) // at least one pr
@@ -99,11 +105,11 @@ func (page *IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemab
 
 			if key == "personal" {
 				if status.ShowGreenIcon {
-					page.showGreenIcon = true
+					page.ShowGreenIcon <- true
 				}
 
 				if status.ShowRedIcon {
-					page.showRedIcon = true
+					page.ShowRedIcon <- true
 				}
 			}
 		}

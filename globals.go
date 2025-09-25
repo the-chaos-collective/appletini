@@ -23,7 +23,7 @@ type Globals struct {
 
 func globals() Globals {
 	return Globals{
-		ConfigPath: "config.work.json",
+		ConfigPath: "config.json",
 		LogLevel:   strToLogLevel(env("LOG_LEVEL")),
 		LogPrefix:  NAME,
 	}

@@ -1,7 +1,7 @@
 package status
 
 // ReviewState
-type ReviewState int
+type ReviewState uint
 
 const (
 	ReviewState_Unknown ReviewState = iota
@@ -12,7 +12,7 @@ const (
 )
 
 // MergeableState
-type MergeableState int
+type MergeableState uint
 
 const (
 	MergeableState_Unknown MergeableState = iota
