@@ -14,7 +14,7 @@ func (qa QueryAggregator) GetAll(client gitter.GraphQLClient) (map[string][]gitt
 	if qa.Mock {
 		prtmp, err := mock.MockQuery{}.GetAll(client)
 		if err != nil {
-			qa.Logger.Errorf("When polling for PRs: %v", err)
+			return prtmp, err
 		}
 
 		return prtmp, nil
@@ -24,7 +24,7 @@ func (qa QueryAggregator) GetAll(client gitter.GraphQLClient) (map[string][]gitt
 
 		prtmp, err := query.GetAll(client)
 		if err != nil {
-			qa.Logger.Errorf("When polling for PRs: %v", err)
+			return prMap, err
 		}
 
 		maps.Copy(prMap, prtmp)

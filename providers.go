@@ -35,7 +35,7 @@ func setupProviders(deps *dig.Container) error {
 			ReportCaller:    false,
 			ReportTimestamp: true,
 			TimeFormat:      time.DateTime,
-			Prefix:          "Appletini",
+			Prefix:          globals.LogPrefix,
 		}))
 	})
 	if err != nil {
@@ -89,17 +89,47 @@ func setupProviders(deps *dig.Container) error {
 		return err
 	}
 
+	// * Error Channel
+	err = deps.Provide(func() HasErrChan {
+		return make(HasErrChan)
+	})
+	if err != nil {
+		return err
+	}
+
+	// * Green Icon Channel
+	err = deps.Provide(func() ShowGreenIconChan {
+		return make(ShowGreenIconChan)
+	})
+	if err != nil {
+		return err
+	}
+
+	// * Red Icon Channel
+	err = deps.Provide(func() ShowRedIconChan {
+		return make(ShowRedIconChan)
+	})
+	if err != nil {
+		return err
+	}
+
 	// * UI
 	err = deps.Provide(func(
 		conf config.Config,
 		logger logging.Logger,
 		prs PRChan,
+		hasErr HasErrChan,
+		showGreenIcon ShowGreenIconChan,
+		showRedIcon ShowRedIconChan,
 	) pages.IndexPage {
 		return pages.IndexPage{
-			PullRequests: prs,
-			Darkmode:     conf.Darkmode,
-			Trackers:     conf.Tracking,
-			Logger:       logger,
+			PullRequests:  prs,
+			HasErr:        hasErr,
+			ShowGreenIcon: showGreenIcon,
+			ShowRedIcon:   showRedIcon,
+			Darkmode:      conf.Darkmode,
+			Trackers:      conf.Tracking,
+			Logger:        logger,
 		}
 	})
 	if err != nil {

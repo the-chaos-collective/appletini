@@ -26,7 +26,7 @@ func Default() Config {
 				},
 			},
 		},
-		Darkmode:  false,
+		Darkmode:  true,
 		ItemCount: 10,
 	}
 }
