@@ -6,6 +6,8 @@ Appletini is a GitHub client that runs in your systray.
 
 It allows you to keep track of Pull Requests assigned to you and others you may be interested in.
 
+<img width="501" height="534" alt="image" src="https://github.com/user-attachments/assets/81e87a6c-c18f-4262-be09-0cc0c7065aa6" />
+
 ## Compatibility
 
 Appletini is multi-platform, supporting Windows, Mac OS, and Linux\*
