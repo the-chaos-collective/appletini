@@ -88,6 +88,10 @@ func (page IndexPage) renderIcons() {
 func (page *IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemable {
 	result := make([]ui.Itemable, 0, 6) // separator + quit button + 4 tracking types by default
 
+	ShowGreenIcon := false
+	ShowRedIcon := false
+	HasErr := false
+
 	for key, value := range prs {
 		prList := make([]ui.Itemable, 0, 1) // at least one pr
 
@@ -105,11 +109,10 @@ func (page *IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemab
 
 			if key == "personal" {
 				if status.ShowGreenIcon {
-					page.ShowGreenIcon <- true
+					ShowGreenIcon = status.ShowGreenIcon
 				}
-
 				if status.ShowRedIcon {
-					page.ShowRedIcon <- true
+					ShowRedIcon = status.ShowRedIcon
 				}
 			}
 		}
@@ -146,6 +149,7 @@ func (page *IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemab
 		}
 		result = append(result, tmp)
 	}
+
 	finalItems := []ui.Itemable{
 		ui.SystraySeparator{},
 		ui.SystrayButton{
@@ -157,6 +161,9 @@ func (page *IndexPage) makeTree(prs map[string][]gitter.PullRequest) []ui.Itemab
 		},
 	}
 	result = append(result, finalItems...)
+	page.ShowGreenIcon <- ShowGreenIcon
+	page.ShowRedIcon <- ShowRedIcon
+	page.HasErr <- HasErr
 
 	return result
 }

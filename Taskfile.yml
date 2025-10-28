@@ -24,10 +24,10 @@ tasks:
 
   run:
     desc: runs app
-    deps:
-      - format
+    # deps:
+    #   - format
     cmds:
-      - APPLETINI_LOG_LEVEL=debug go run *.go
+      - APPLETINI_LOG_LEVEL=debug go run -x *.go
     silent: true
 
   build:
