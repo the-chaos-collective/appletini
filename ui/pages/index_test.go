@@ -427,7 +427,8 @@ func TestBuildTreeHidesApproveOnceYouApproved(t *testing.T) {
 		{name: "not reviewed yet", viewerReview: "", expected: []string{"Open in browser", "Approve"}},
 		{name: "you already approved", reviewDecision: "APPROVED", viewerReview: "APPROVED", expected: []string{"Open in browser"}},
 		{name: "approved by others only", reviewDecision: "APPROVED", viewerReview: "", expected: []string{"Open in browser", "Approve"}},
-		{name: "you requested changes", reviewDecision: "CHANGES_REQUESTED", viewerReview: "CHANGES_REQUESTED", expected: []string{"Open in browser", "Approve"}},
+		// Changes requested makes the PR red, and red PRs never offer Approve.
+		{name: "you requested changes", reviewDecision: "CHANGES_REQUESTED", viewerReview: "CHANGES_REQUESTED", expected: []string{"Open in browser"}},
 		{name: "your approval was dismissed", viewerReview: "DISMISSED", expected: []string{"Open in browser", "Approve"}},
 	}
 
@@ -442,6 +443,40 @@ func TestBuildTreeHidesApproveOnceYouApproved(t *testing.T) {
 			}
 
 			if got := prOptions(t, items, "Bugs")[0]; !slices.Equal(got, tc.expected) {
+				t.Fatalf("options %v, expected %v", got, tc.expected)
+			}
+		})
+	}
+}
+
+func TestBuildTreeHidesApproveOnRedPRs(t *testing.T) {
+	approve := func(gitter.PullRequest) func() error { return func() error { return nil } }
+
+	testCases := []struct {
+		name     string
+		pr       gitter.PullRequest
+		expected []string
+	}{
+		//exhaustruct:ignore
+		{name: "review required", pr: gitter.PullRequest{Id: "1", ReviewDecision: "REVIEW_REQUIRED", Mergeable: "MERGEABLE", ChecksState: "SUCCESS"}, expected: []string{"Open in browser", "Approve"}},
+		//exhaustruct:ignore
+		{name: "checks still running", pr: gitter.PullRequest{Id: "2", ReviewDecision: "REVIEW_REQUIRED", Mergeable: "MERGEABLE", ChecksState: "PENDING"}, expected: []string{"Open in browser", "Approve"}},
+		//exhaustruct:ignore
+		{name: "changes requested", pr: gitter.PullRequest{Id: "3", ReviewDecision: "CHANGES_REQUESTED", Mergeable: "MERGEABLE"}, expected: []string{"Open in browser"}},
+		//exhaustruct:ignore
+		{name: "merge conflict", pr: gitter.PullRequest{Id: "4", ReviewDecision: "REVIEW_REQUIRED", Mergeable: "CONFLICTING"}, expected: []string{"Open in browser"}},
+		//exhaustruct:ignore
+		{name: "failing CI", pr: gitter.PullRequest{Id: "5", ReviewDecision: "REVIEW_REQUIRED", Mergeable: "MERGEABLE", ChecksState: "FAILURE"}, expected: []string{"Open in browser"}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			items, _, err := buildTree(map[string][]gitter.PullRequest{"repo_0": {tc.pr}}, trackers(), treeActions{quit: func() error { return nil }, approve: approve})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if got := prOptions(t, items, "Appletini")[0]; !slices.Equal(got, tc.expected) {
 				t.Fatalf("options %v, expected %v", got, tc.expected)
 			}
 		})

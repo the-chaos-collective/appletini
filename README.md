@@ -41,8 +41,9 @@ On your own PRs, failing CI shows the red badge, and a PR only shows as ready to
 (green badge) when it's approved, has no conflicts, and its checks pass (or it has none).
 
 Each PR in a tracker has an **Approve** option in its menu, which approves it with the
-comment "LGTM!". It isn't shown on your own PRs (GitHub doesn't allow approving those)
-or on PRs you've already approved yourself; other people's approvals don't hide it.
+comment "LGTM!". It isn't shown on your own PRs (GitHub doesn't allow approving those),
+on PRs you've already approved yourself (other people's approvals don't hide it), or
+on red PRs: changes requested, merge conflicts or failing CI.
 Approving needs a token that can write pull request reviews; a classic token with
 `repo` scope can. The result (approved, or why not) shows as a desktop notification,
 and the menu updates on the next poll.
