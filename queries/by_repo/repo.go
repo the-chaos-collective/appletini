@@ -37,6 +37,7 @@ type PullNode struct {
 	Reviews        TotalCount        `json:"reviews"`
 	Commits        gitter.LastCommit `json:"commits"`
 	ViewerReview   *gitter.Review    `json:"viewerLatestReview"`
+	ViewerAuthor   bool              `json:"viewerDidAuthor"`
 }
 
 type TotalCount struct {
@@ -62,6 +63,7 @@ func (result PullRequest) Extract() []gitter.PullRequest {
 			Mergeable:      node.Mergeable,
 			ChecksState:    node.Commits.ChecksState(),
 			ViewerReview:   node.ViewerReview.StateOrEmpty(),
+			ViewerAuthor:   node.ViewerAuthor,
 		}
 		all = append(all, pr)
 	}

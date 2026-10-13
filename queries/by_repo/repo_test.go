@@ -154,6 +154,7 @@ func TestGeneratedQuery(t *testing.T) {
 		"totalCount",
 		"statusCheckRollup",
 		"viewerLatestReview",
+		"viewerDidAuthor",
 	} {
 		if !strings.Contains(fake.Queries()[0], want) {
 			t.Fatalf("query does not contain %q:\n%s", want, fake.Queries()[0])

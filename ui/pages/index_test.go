@@ -10,6 +10,7 @@ import (
 	"appletini/config"
 	v2 "appletini/config/migration/v2"
 	"appletini/gitter"
+	"appletini/newprs"
 	"appletini/pullrequests"
 	"appletini/reviews"
 	"appletini/trackerkey"
@@ -666,5 +667,58 @@ func TestRequestRefreshWithoutChannel(t *testing.T) {
 func TestRefreshDelay(t *testing.T) {
 	if refreshDelay != 2*time.Second {
 		t.Fatalf("refresh delay is %v, expected 2s", refreshDelay)
+	}
+}
+
+func TestNewPRsNotification(t *testing.T) {
+	//exhaustruct:ignore
+	found := func(key string, n int, title string) newprs.Found {
+		return newprs.Found{Key: key, PR: gitter.PullRequest{Number: n, Title: title}}
+	}
+
+	many := make([]newprs.Found, 0, 7)
+	for i := 1; i <= 7; i++ {
+		many = append(many, found("repo_0", i, "T"))
+	}
+
+	testCases := []struct {
+		name            string
+		found           []newprs.Found
+		expectedTitle   string
+		expectedContent string
+	}{
+		{
+			name:            "one PR",
+			found:           []newprs.Found{found("repo_0", 42, "Add tray")},
+			expectedTitle:   "New PR to review",
+			expectedContent: "#42 Add tray (Appletini)",
+		},
+		{
+			name:            "several PRs from different trackers",
+			found:           []newprs.Found{found("label_0", 1, "Fix bug"), found("author_0", 2, "Docs")},
+			expectedTitle:   "2 new PRs to review",
+			expectedContent: "#1 Fix bug (Bugs)\n#2 Docs (Team)",
+		},
+		{
+			name:            "unknown tracker falls back to its key",
+			found:           []newprs.Found{found("repo_9", 3, "X")},
+			expectedTitle:   "New PR to review",
+			expectedContent: "#3 X (repo_9)",
+		},
+		{
+			name:            "long lists are capped",
+			found:           many,
+			expectedTitle:   "7 new PRs to review",
+			expectedContent: "#1 T (Appletini)\n#2 T (Appletini)\n#3 T (Appletini)\n#4 T (Appletini)\n#5 T (Appletini)\nand 2 more",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			title, content := newPRsNotification(tc.found, trackers())
+			if title != tc.expectedTitle || content != tc.expectedContent {
+				t.Fatalf("got %q / %q, expected %q / %q", title, content, tc.expectedTitle, tc.expectedContent)
+			}
+		})
 	}
 }

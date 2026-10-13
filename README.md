@@ -55,6 +55,13 @@ confirmation step. Merge uses the repository's default merge method. Both need a
 with write access to the repository, report the result as a desktop notification, and
 trigger a fresh poll 2 seconds later so the menu updates right away.
 
+When a new PR shows up in one of your label, repo or author trackers, Appletini shows a
+desktop notification ("New PR to review", or "3 new PRs to review" with the list). Your
+own PRs and PRs you've already approved don't notify, and nothing is announced for the
+PRs already open when Appletini starts. Notifications go through your desktop's
+notification service, so on Ubuntu they appear in the notification list and are
+silenced by Do Not Disturb like any other app.
+
 - github:
   - gqlAPI: GitHub GraphQL endpoint (`https://api.github.com/graphql`, or your GitHub Enterprise one)
   - token: NAME of the env variable that holds your github personal access token (not the token itself)

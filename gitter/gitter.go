@@ -27,7 +27,10 @@ type PullRequest struct {
 	// ViewerReview is the state of your own latest review on the PR
 	// (APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED, PENDING), or ""
 	// when you haven't reviewed it.
-	ViewerReview string         `yaml:"viewerReview"`
+	ViewerReview string `yaml:"viewerReview"`
+
+	// ViewerAuthor is true when you opened the PR.
+	ViewerAuthor bool           `yaml:"viewerAuthor"`
 	_            map[string]any `yaml:",inline"`
 }
 
@@ -57,7 +60,8 @@ func (pr PullRequest) ApprovedByViewer() bool {
 // you requested yourself don't block it, since GitHub keeps the PR in
 // "changes requested" until you approve (or your review is dismissed).
 func (pr PullRequest) ApprovableByViewer() bool {
-	if pr.ApprovedByViewer() {
+	// GitHub doesn't let you approve your own PRs, wherever they're listed.
+	if pr.ViewerAuthor || pr.ApprovedByViewer() {
 		return false
 	}
 
