@@ -427,8 +427,8 @@ func TestBuildTreeHidesApproveOnceYouApproved(t *testing.T) {
 		{name: "not reviewed yet", viewerReview: "", expected: []string{"Open in browser", "Approve"}},
 		{name: "you already approved", reviewDecision: "APPROVED", viewerReview: "APPROVED", expected: []string{"Open in browser"}},
 		{name: "approved by others only", reviewDecision: "APPROVED", viewerReview: "", expected: []string{"Open in browser", "Approve"}},
-		// Changes requested makes the PR red, and red PRs never offer Approve.
-		{name: "you requested changes", reviewDecision: "CHANGES_REQUESTED", viewerReview: "CHANGES_REQUESTED", expected: []string{"Open in browser"}},
+		// Only your own change request is red: you can still approve after the fixes.
+		{name: "you requested changes", reviewDecision: "CHANGES_REQUESTED", viewerReview: "CHANGES_REQUESTED", expected: []string{"Open in browser", "Approve"}},
 		{name: "your approval was dismissed", viewerReview: "DISMISSED", expected: []string{"Open in browser", "Approve"}},
 	}
 
@@ -462,7 +462,11 @@ func TestBuildTreeHidesApproveOnRedPRs(t *testing.T) {
 		//exhaustruct:ignore
 		{name: "checks still running", pr: gitter.PullRequest{Id: "2", ReviewDecision: "REVIEW_REQUIRED", Mergeable: "MERGEABLE", ChecksState: "PENDING"}, expected: []string{"Open in browser", "Approve"}},
 		//exhaustruct:ignore
-		{name: "changes requested", pr: gitter.PullRequest{Id: "3", ReviewDecision: "CHANGES_REQUESTED", Mergeable: "MERGEABLE"}, expected: []string{"Open in browser"}},
+		{name: "changes requested by someone else", pr: gitter.PullRequest{Id: "3", ReviewDecision: "CHANGES_REQUESTED", Mergeable: "MERGEABLE"}, expected: []string{"Open in browser"}},
+		//exhaustruct:ignore
+		{name: "changes requested by you", pr: gitter.PullRequest{Id: "6", ReviewDecision: "CHANGES_REQUESTED", Mergeable: "MERGEABLE", ViewerReview: "CHANGES_REQUESTED"}, expected: []string{"Open in browser", "Approve"}},
+		//exhaustruct:ignore
+		{name: "changes requested by you, but CI failing", pr: gitter.PullRequest{Id: "7", ReviewDecision: "CHANGES_REQUESTED", Mergeable: "MERGEABLE", ViewerReview: "CHANGES_REQUESTED", ChecksState: "FAILURE"}, expected: []string{"Open in browser"}},
 		//exhaustruct:ignore
 		{name: "merge conflict", pr: gitter.PullRequest{Id: "4", ReviewDecision: "REVIEW_REQUIRED", Mergeable: "CONFLICTING"}, expected: []string{"Open in browser"}},
 		//exhaustruct:ignore

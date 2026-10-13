@@ -51,6 +51,29 @@ func (pr PullRequest) ApprovedByViewer() bool {
 	return pr.ViewerReview == "APPROVED"
 }
 
+// ApprovableByViewer reports whether offering you an Approve makes sense:
+// not if you've already approved, and not while the PR is red because of
+// merge conflicts, failing CI or changes requested by someone else. Changes
+// you requested yourself don't block it, since GitHub keeps the PR in
+// "changes requested" until you approve (or your review is dismissed).
+func (pr PullRequest) ApprovableByViewer() bool {
+	if pr.ApprovedByViewer() {
+		return false
+	}
+
+	info := pr.PRInfo()
+
+	if info.Mergeable == status.MergeableState_Conflict || info.Checks == status.ChecksState_Failing {
+		return false
+	}
+
+	if info.Review == status.ReviewState_ChangesRequested && pr.ViewerReview != "CHANGES_REQUESTED" {
+		return false
+	}
+
+	return true
+}
+
 // LastCommit is the response shape of
 //
 //	commits(last: 1) { nodes { commit { statusCheckRollup { state } } } }

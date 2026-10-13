@@ -183,11 +183,11 @@ func buildTree(
 		for _, pr := range prs[rawKeys[key]] {
 			status := pr.PRInfo().Classify()
 
-			// No Approve on your own PRs (GitHub doesn't allow it), on PRs
-			// you've already approved yourself, or on red PRs (changes
-			// requested, conflicts or failing CI).
+			// No Approve on your own PRs (GitHub doesn't allow it); otherwise
+			// see ApprovableByViewer (already approved, or red for a reason
+			// other than your own change request).
 			var approve func() error
-			if key.Kind != trackerkey.Personal && !pr.ApprovedByViewer() && !status.ShowRedIcon && acts.approve != nil {
+			if key.Kind != trackerkey.Personal && pr.ApprovableByViewer() && acts.approve != nil {
 				approve = acts.approve(pr)
 			}
 

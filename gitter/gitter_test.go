@@ -158,3 +158,38 @@ func TestReviewStateOrEmpty(t *testing.T) {
 		})
 	}
 }
+
+func TestApprovableByViewer(t *testing.T) {
+	testCases := []struct {
+		name     string
+		pr       gitter.PullRequest
+		expected bool
+	}{
+		//exhaustruct:ignore
+		{name: "needs review", pr: gitter.PullRequest{ReviewDecision: "REVIEW_REQUIRED", Mergeable: "MERGEABLE"}, expected: true},
+		//exhaustruct:ignore
+		{name: "approved by others, not by you", pr: gitter.PullRequest{ReviewDecision: "APPROVED", Mergeable: "MERGEABLE"}, expected: true},
+		//exhaustruct:ignore
+		{name: "already approved by you", pr: gitter.PullRequest{ReviewDecision: "APPROVED", Mergeable: "MERGEABLE", ViewerReview: "APPROVED"}, expected: false},
+		//exhaustruct:ignore
+		{name: "running CI is fine", pr: gitter.PullRequest{ReviewDecision: "REVIEW_REQUIRED", Mergeable: "MERGEABLE", ChecksState: "PENDING"}, expected: true},
+		//exhaustruct:ignore
+		{name: "failing CI", pr: gitter.PullRequest{ReviewDecision: "REVIEW_REQUIRED", Mergeable: "MERGEABLE", ChecksState: "FAILURE"}, expected: false},
+		//exhaustruct:ignore
+		{name: "merge conflict", pr: gitter.PullRequest{ReviewDecision: "REVIEW_REQUIRED", Mergeable: "CONFLICTING"}, expected: false},
+		//exhaustruct:ignore
+		{name: "changes requested by someone else", pr: gitter.PullRequest{ReviewDecision: "CHANGES_REQUESTED", Mergeable: "MERGEABLE", ViewerReview: "COMMENTED"}, expected: false},
+		//exhaustruct:ignore
+		{name: "changes requested by you", pr: gitter.PullRequest{ReviewDecision: "CHANGES_REQUESTED", Mergeable: "MERGEABLE", ViewerReview: "CHANGES_REQUESTED"}, expected: true},
+		//exhaustruct:ignore
+		{name: "changes requested by you, with a conflict", pr: gitter.PullRequest{ReviewDecision: "CHANGES_REQUESTED", Mergeable: "CONFLICTING", ViewerReview: "CHANGES_REQUESTED"}, expected: false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := tc.pr.ApprovableByViewer(); got != tc.expected {
+				t.Fatalf("got %v, expected %v", got, tc.expected)
+			}
+		})
+	}
+}
