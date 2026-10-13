@@ -106,6 +106,10 @@ func TestGeneratedQueryQuotesValues(t *testing.T) {
 				t.Fatalf("query does not contain %s:\n%s", tc.expected, sent)
 			}
 
+			if !strings.Contains(sent, "statusCheckRollup") {
+				t.Fatalf("query does not request the CI state:\n%s", sent)
+			}
+
 			if !strings.Contains(sent, `repository(name: "appletini", owner: "the-chaos-collective")`) {
 				t.Fatalf("query does not quote repository:\n%s", sent)
 			}
@@ -121,7 +125,8 @@ const labelResponse = `{
       "permalink": "https://github.com/o/r/pull/7",
       "reviewDecision": "APPROVED", "mergeable": "MERGEABLE",
       "reviewRequests": {"totalCount": 2},
-      "reviews": {"totalCount": 3}
+      "reviews": {"totalCount": 3},
+      "commits": {"nodes": [{"commit": {"statusCheckRollup": {"state": "FAILURE"}}}]}
     }}
   ]}}}
 }`
@@ -141,6 +146,7 @@ func TestGetAll(t *testing.T) {
 			ReviewDecision: "APPROVED",
 			Id:             "PR_1",
 			Mergeable:      "MERGEABLE",
+			ChecksState:    "FAILURE",
 		}},
 	}
 

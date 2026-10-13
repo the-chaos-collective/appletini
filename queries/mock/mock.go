@@ -26,6 +26,7 @@ func (MockQuery) GetAll(ctx context.Context, _ gitter.Querier) (map[string][]git
 			BaseRefName:    "to-branch",
 			Mergeable:      "MERGEABLE",
 			ReviewDecision: "APPROVED",
+			ChecksState:    "SUCCESS",
 		},
 		{
 			Number:         2,
@@ -34,6 +35,7 @@ func (MockQuery) GetAll(ctx context.Context, _ gitter.Querier) (map[string][]git
 			BaseRefName:    "to-branch",
 			Mergeable:      "UNKNOWN",
 			ReviewDecision: "APPROVED",
+			ChecksState:    "PENDING",
 		},
 		{
 			Number:         3,
@@ -42,6 +44,7 @@ func (MockQuery) GetAll(ctx context.Context, _ gitter.Querier) (map[string][]git
 			BaseRefName:    "to-branch",
 			Mergeable:      "CONFLICTING",
 			ReviewDecision: "APPROVED",
+			ChecksState:    "FAILURE",
 		},
 		{
 			Number:         4,

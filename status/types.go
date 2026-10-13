@@ -20,9 +20,22 @@ const (
 	MergeableState_Mergeable
 )
 
+// ChecksState is the combined CI result (all checks and commit statuses) on
+// the PR's latest commit. The zero value means the PR has no checks.
+type ChecksState uint
+
+const (
+	ChecksState_None ChecksState = iota
+	ChecksState_Passing
+	ChecksState_Failing
+	ChecksState_Pending
+	ChecksState_Unknown
+)
+
 type PRInfo struct {
 	Review    ReviewState
 	Mergeable MergeableState
+	Checks    ChecksState
 }
 
 type Status struct {

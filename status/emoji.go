@@ -3,7 +3,7 @@ package status
 func Emoji(input PRInfo) []string {
 	emoji := make([]string, 0)
 
-	if (input.Mergeable == MergeableState_Mergeable || input.Mergeable == MergeableState_Unknown) && (input.Review == ReviewState_Approved || input.Review == ReviewState_NoReviewRequired) {
+	if ShowGreenIcon(input) {
 		emoji = append(emoji, "🟢")
 	} else {
 		emoji = append(emoji, "🔴")
@@ -28,6 +28,17 @@ func Emoji(input PRInfo) []string {
 	case ReviewState_RequiresReview:
 		emoji = append(emoji, "👁‍🗨")
 	case ReviewState_Unknown:
+		emoji = append(emoji, "❔")
+	}
+
+	switch input.Checks {
+	case ChecksState_None, ChecksState_Passing:
+		break
+	case ChecksState_Failing:
+		emoji = append(emoji, "❌")
+	case ChecksState_Pending:
+		emoji = append(emoji, "⏳")
+	case ChecksState_Unknown:
 		emoji = append(emoji, "❔")
 	}
 

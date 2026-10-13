@@ -29,18 +29,19 @@ type Edge struct {
 }
 
 type PullNode struct {
-	Id             string     `json:"id"`
-	Title          string     `json:"title"`
-	Url            string     `json:"url"`
-	BaseRefName    string     `json:"baseRefName"`
-	HeadRefName    string     `json:"headRefName"`
-	ReviewRequests TotalCount `json:"reviewRequests"`
-	ReviewDecision string     `json:"reviewDecision"`
-	Permalink      string     `json:"permalink"`
-	Mergeable      string     `json:"mergeable"`
-	Number         int        `json:"number"`
-	State          string     `json:"state"`
-	Reviews        TotalCount `json:"reviews"`
+	Id             string            `json:"id"`
+	Title          string            `json:"title"`
+	Url            string            `json:"url"`
+	BaseRefName    string            `json:"baseRefName"`
+	HeadRefName    string            `json:"headRefName"`
+	ReviewRequests TotalCount        `json:"reviewRequests"`
+	ReviewDecision string            `json:"reviewDecision"`
+	Permalink      string            `json:"permalink"`
+	Mergeable      string            `json:"mergeable"`
+	Number         int               `json:"number"`
+	State          string            `json:"state"`
+	Reviews        TotalCount        `json:"reviews"`
+	Commits        gitter.LastCommit `json:"commits"`
 }
 
 type TotalCount struct {
@@ -64,6 +65,7 @@ func (result LabelMap) Extract() []gitter.PullRequest {
 			ReviewDecision: node.ReviewDecision,
 			Id:             node.Id,
 			Mergeable:      node.Mergeable,
+			ChecksState:    node.Commits.ChecksState(),
 		}
 		all = append(all, pr)
 	}

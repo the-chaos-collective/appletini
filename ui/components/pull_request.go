@@ -34,9 +34,10 @@ func (pr PullRequest) makeBranchLine() string {
 }
 
 func (pr PullRequest) makeStatus() string {
+	// Any remaining emoji (review, CI) go on the status line together.
 	emoji := ""
 	if len(pr.Status.Emoji) > 2 {
-		emoji = pr.Status.Emoji[2]
+		emoji = strings.Join(pr.Status.Emoji[2:], "")
 	}
 	return fmt.Sprintf("%s\t%s", emoji, pr.Status.Message)
 }

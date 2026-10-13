@@ -124,6 +124,11 @@ func TestBuildTree(t *testing.T) {
 	//exhaustruct:ignore
 	waiting := gitter.PullRequest{Number: 3, ReviewDecision: "REVIEW_REQUIRED", Mergeable: "MERGEABLE"}
 
+	//exhaustruct:ignore
+	failingCI := gitter.PullRequest{Number: 4, ReviewDecision: "APPROVED", Mergeable: "MERGEABLE", ChecksState: "FAILURE"}
+	//exhaustruct:ignore
+	runningCI := gitter.PullRequest{Number: 5, ReviewDecision: "APPROVED", Mergeable: "MERGEABLE", ChecksState: "PENDING"}
+
 	quit := func() error { return nil }
 
 	testCases := []struct {
@@ -150,6 +155,17 @@ func TestBuildTree(t *testing.T) {
 			prs:            map[string][]gitter.PullRequest{"personal": {mergeable, waiting}},
 			expectedTitles: []string{"My Pull Requests", "-", "Quit"},
 			expectedState:  iconState{green: true},
+		},
+		{
+			name:           "own PR with failing CI turns the icon red",
+			prs:            map[string][]gitter.PullRequest{"personal": {failingCI}},
+			expectedTitles: []string{"My Pull Requests", "-", "Quit"},
+			expectedState:  iconState{red: true},
+		},
+		{
+			name:           "own PR with running CI is not ready yet",
+			prs:            map[string][]gitter.PullRequest{"personal": {runningCI}},
+			expectedTitles: []string{"My Pull Requests", "-", "Quit"},
 		},
 		{
 			name:           "own conflicting PR turns the icon red",

@@ -32,6 +32,14 @@ Create an env variable on your system holding your personal access token (I used
 a classic one with repo, user and projects permission).
 You may use any name for it, just make sure to use the same name in the config file.
 
+Each PR also shows its CI status (✅ passing, ❌ failing, ⏳ running), taken from the
+checks on its latest commit. A classic token with `repo` scope can read it. If you use
+a fine-grained token and the CI status never appears, make sure the token can read the
+repository's commit statuses and checks.
+
+On your own PRs, failing CI shows the red badge, and a PR only shows as ready to merge
+(green badge) when it's approved, has no conflicts, and its checks pass (or it has none).
+
 - github:
   - gqlAPI: GitHub GraphQL endpoint (`https://api.github.com/graphql`, or your GitHub Enterprise one)
   - token: NAME of the env variable that holds your github personal access token (not the token itself)

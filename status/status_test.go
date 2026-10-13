@@ -69,6 +69,56 @@ func TestClassify(t *testing.T) {
 				Emoji: []string{"🔴", "🚧", "📝"}, Message: "Changes requested | Conflict",
 			},
 		},
+		{
+			name: "ready with checks passing is green",
+			input: status.PRInfo{
+				Review: status.ReviewState_Approved, Mergeable: status.MergeableState_Mergeable, Checks: status.ChecksState_Passing,
+			},
+			expected: status.Status{
+				ShowGreenIcon: true, ShowRedIcon: false,
+				Emoji: []string{"🟢"}, Message: "Approved | Can be merged | Checks passing",
+			},
+		},
+		{
+			name: "failing checks are red even when approved and mergeable",
+			input: status.PRInfo{
+				Review: status.ReviewState_Approved, Mergeable: status.MergeableState_Mergeable, Checks: status.ChecksState_Failing,
+			},
+			expected: status.Status{
+				ShowGreenIcon: false, ShowRedIcon: true,
+				Emoji: []string{"🔴", "❌"}, Message: "Approved | Can be merged | Checks failing",
+			},
+		},
+		{
+			name: "running checks block ready to merge but are not red",
+			input: status.PRInfo{
+				Review: status.ReviewState_Approved, Mergeable: status.MergeableState_Mergeable, Checks: status.ChecksState_Pending,
+			},
+			expected: status.Status{
+				ShowGreenIcon: false, ShowRedIcon: false,
+				Emoji: []string{"🔴", "⏳"}, Message: "Approved | Can be merged | Checks running",
+			},
+		},
+		{
+			name: "unknown checks state is not ready",
+			input: status.PRInfo{
+				Review: status.ReviewState_NoReviewRequired, Mergeable: status.MergeableState_Mergeable, Checks: status.ChecksState_Unknown,
+			},
+			expected: status.Status{
+				ShowGreenIcon: false, ShowRedIcon: false,
+				Emoji: []string{"🔴", "❔"}, Message: "No review required | Can be merged | Checks unknown",
+			},
+		},
+		{
+			name: "everything wrong at once",
+			input: status.PRInfo{
+				Review: status.ReviewState_ChangesRequested, Mergeable: status.MergeableState_Conflict, Checks: status.ChecksState_Failing,
+			},
+			expected: status.Status{
+				ShowGreenIcon: false, ShowRedIcon: true,
+				Emoji: []string{"🔴", "🚧", "📝", "❌"}, Message: "Changes requested | Conflict | Checks failing",
+			},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -96,6 +146,12 @@ func TestStrings(t *testing.T) {
 		{name: "conflict", value: status.MergeableState_Conflict, expected: "Conflict"},
 		{name: "mergeable", value: status.MergeableState_Mergeable, expected: "Can be merged"},
 		{name: "undefined mergeable", value: status.MergeableState(42), expected: "Undefined(42)"},
+		{name: "no checks", value: status.ChecksState_None, expected: "No checks"},
+		{name: "checks passing", value: status.ChecksState_Passing, expected: "Checks passing"},
+		{name: "checks failing", value: status.ChecksState_Failing, expected: "Checks failing"},
+		{name: "checks running", value: status.ChecksState_Pending, expected: "Checks running"},
+		{name: "checks unknown", value: status.ChecksState_Unknown, expected: "Checks unknown"},
+		{name: "undefined checks", value: status.ChecksState(7), expected: "Undefined(7)"},
 	}
 
 	for _, tc := range testCases {

@@ -19,16 +19,17 @@ type totalCount struct {
 }
 
 type pullRequestPersonal struct {
-	Id             string     `json:"id"`
-	Title          string     `json:"title"`
-	BaseRefName    string     `json:"baseRefName"`
-	HeadRefName    string     `json:"headRefName"`
-	Number         int        `json:"number"`
-	Permalink      string     `json:"permalink"`
-	Reviews        totalCount `json:"reviews"`
-	ReviewRequests totalCount `json:"reviewRequests"`
-	ReviewDecision string     `json:"reviewDecision"`
-	Mergeable      string     `json:"mergeable"`
+	Id             string            `json:"id"`
+	Title          string            `json:"title"`
+	BaseRefName    string            `json:"baseRefName"`
+	HeadRefName    string            `json:"headRefName"`
+	Number         int               `json:"number"`
+	Permalink      string            `json:"permalink"`
+	Reviews        totalCount        `json:"reviews"`
+	ReviewRequests totalCount        `json:"reviewRequests"`
+	ReviewDecision string            `json:"reviewDecision"`
+	Mergeable      string            `json:"mergeable"`
+	Commits        gitter.LastCommit `json:"commits"`
 }
 
 func (pr pullRequestPersonal) transform() gitter.PullRequest {
@@ -43,6 +44,7 @@ func (pr pullRequestPersonal) transform() gitter.PullRequest {
 		ReviewRequests: pr.ReviewRequests.TotalCount,
 		ReviewDecision: pr.ReviewDecision,
 		Mergeable:      pr.Mergeable,
+		ChecksState:    pr.Commits.ChecksState(),
 	}
 }
 

@@ -70,10 +70,12 @@ func TestMakeQueryValidation(t *testing.T) {
 const repoResponse = `{
   "repo_0": {"pullRequests": {"edges": [
     {"node": {"id": "PR_1", "title": "One", "number": 1, "reviewDecision": "", "mergeable": "UNKNOWN",
-              "reviewRequests": {"totalCount": 0}, "reviews": {"totalCount": 0}}},
+              "reviewRequests": {"totalCount": 0}, "reviews": {"totalCount": 0},
+              "commits": {"nodes": [{"commit": {"statusCheckRollup": null}}]}}},
     {"node": {"id": "PR_2", "title": "Two", "number": 2, "reviewDecision": "CHANGES_REQUESTED", "mergeable": "CONFLICTING",
               "baseRefName": "main", "headRefName": "feat", "permalink": "https://x/2",
-              "reviewRequests": {"totalCount": 1}, "reviews": {"totalCount": 4}}}
+              "reviewRequests": {"totalCount": 1}, "reviews": {"totalCount": 4},
+              "commits": {"nodes": [{"commit": {"statusCheckRollup": {"state": "SUCCESS"}}}]}}}
   ]}},
   "repo_1": {"pullRequests": {"edges": []}}
 }`
@@ -92,7 +94,7 @@ func TestGetAll(t *testing.T) {
 			{Id: "PR_1", Title: "One", Number: 1, Mergeable: "UNKNOWN"},
 			{
 				Id: "PR_2", Title: "Two", Number: 2, ReviewDecision: "CHANGES_REQUESTED", Mergeable: "CONFLICTING",
-				BaseRefName: "main", HeadRefName: "feat", Permalink: "https://x/2", ReviewRequests: 1, ReviewCount: 4,
+				BaseRefName: "main", HeadRefName: "feat", Permalink: "https://x/2", ReviewRequests: 1, ReviewCount: 4, ChecksState: "SUCCESS",
 			},
 		},
 		"repo_1": {},
@@ -150,6 +152,7 @@ func TestGeneratedQuery(t *testing.T) {
 		`repo_0: repository(name: "appletini", owner: "the-chaos-collective")`,
 		"first: 10",
 		"totalCount",
+		"statusCheckRollup",
 	} {
 		if !strings.Contains(fake.Queries()[0], want) {
 			t.Fatalf("query does not contain %q:\n%s", want, fake.Queries()[0])

@@ -21,6 +21,11 @@ func TestPullRequestBuild(t *testing.T) {
 			expectedLines: []string{"🔴\t(#7) Fix tray", "🚧\tfix/tray ➜ main", "📝\tmsg"},
 		},
 		{
+			name:          "extra emoji share the status line",
+			emoji:         []string{"🔴", "🚧", "📝", "❌"},
+			expectedLines: []string{"🔴\t(#7) Fix tray", "🚧\tfix/tray ➜ main", "📝❌\tmsg"},
+		},
+		{
 			name:          "one emoji",
 			emoji:         []string{"🟢"},
 			expectedLines: []string{"🟢\t(#7) Fix tray", "\tfix/tray ➜ main", "\tmsg"},

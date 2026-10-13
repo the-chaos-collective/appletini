@@ -52,6 +52,15 @@ var ViewerQuery = `query fetchPRs {
 						}
 					}
 					mergeable
+					commits(last: 1) {
+						nodes {
+						commit {
+							statusCheckRollup {
+							state
+							}
+						}
+						}
+					}
 					}
 				}
 				}

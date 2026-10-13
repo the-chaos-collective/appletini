@@ -38,7 +38,7 @@ main ──dig──▶ config ─▶ gitter.GraphQLClient (Querier)
 | `queries/aggregator` | Runs the queries in order and merges their results; stops at the first error, keeping partial results | `queries`, `queries/mock`, `gitter` |
 | `hasher` | Sends the PR map only when its hash changed; honours ctx while sending | `gitter`, `logging` |
 | `polling` | Builds the queries from config (using `trackerkey` ids) and runs the poll loop until ctx is cancelled | `config`, `gitter`, `hasher`, `queries/*`, `trackerkey` |
-| `status` | Classifies a PR's review/mergeable state into emoji, message and icon flags | none |
+| `status` | Classifies a PR's review, mergeable and CI (checks) state into emoji, message and icon flags | none |
 | `actions` | Opens a link in the OS browser (`open` / `xdg-open` / `rundll32`) after validating it | none |
 | `ui` | Fyne systray wrapper: menu model, `SetMenu`/`SetIcon` guarded by one mutex, `Quit` | `logging`, fyne |
 | `ui/components` | Menu items for a PR and its options | `ui`, `status`, `actions` |

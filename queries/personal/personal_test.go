@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strings"
 	"testing"
 
 	"appletini/gitter"
@@ -19,7 +20,8 @@ const viewerResponse = `{
       "permalink": "https://github.com/o/r/pull/9",
       "reviewDecision": "REVIEW_REQUIRED", "mergeable": "MERGEABLE",
       "reviewRequests": {"totalCount": 1},
-      "reviews": {"totalCount": 5, "nodes": []}
+      "reviews": {"totalCount": 5, "nodes": []},
+      "commits": {"nodes": [{"commit": {"statusCheckRollup": {"state": "PENDING"}}}]}
     }}
   ]}}
 }`
@@ -53,6 +55,7 @@ func TestGetAll(t *testing.T) {
 					Mergeable:      "MERGEABLE",
 					ReviewRequests: 1,
 					ReviewCount:    5,
+					ChecksState:    "PENDING",
 				}},
 			},
 		},
@@ -78,5 +81,11 @@ func TestGetAll(t *testing.T) {
 				t.Fatalf("got %+v, expected %+v", got, tc.expected)
 			}
 		})
+	}
+}
+
+func TestViewerQueryRequestsChecks(t *testing.T) {
+	if !strings.Contains(personal.ViewerQuery, "statusCheckRollup") {
+		t.Fatal("the personal query does not request the CI state")
 	}
 }
