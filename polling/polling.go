@@ -30,9 +30,12 @@ var (
 )
 
 type Polling struct {
-	Logger          logging.Logger
-	GqlClient       gitter.Querier
-	Config          config.Config
+	Logger    logging.Logger
+	GqlClient gitter.Querier
+	Config    config.Config
+	// Refresh cuts the wait between polls short: a value on it makes the next
+	// poll happen straight away. nil means only the regular schedule.
+	Refresh         <-chan struct{}
 	queryAggregator queries.Query
 }
 
@@ -188,6 +191,9 @@ func (p Polling) PollPRs(ctx context.Context, prs chan<- map[string][]gitter.Pul
 			timer.Stop()
 			return nil
 		case <-timer.C:
+		case <-p.Refresh:
+			timer.Stop()
+			p.Logger.Debug("Polling early on request")
 		}
 	}
 }

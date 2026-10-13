@@ -123,6 +123,14 @@ func setupProviders(deps *dig.Container) error {
 		return err
 	}
 
+	// * Refresh Channel (buffered: one pending request is enough)
+	err = deps.Provide(func() RefreshChan {
+		return make(RefreshChan, 1)
+	})
+	if err != nil {
+		return err
+	}
+
 	// * UI
 	err = deps.Provide(func(
 		conf config.Config,
@@ -131,6 +139,7 @@ func setupProviders(deps *dig.Container) error {
 		hasErr HasErrChan,
 		approver reviews.Approver,
 		prActions pullrequests.Actions,
+		refresh RefreshChan,
 	) *pages.IndexPage {
 		//exhaustruct:ignore
 		return &pages.IndexPage{
@@ -138,6 +147,7 @@ func setupProviders(deps *dig.Container) error {
 			HasErr:       hasErr,
 			Approver:     approver,
 			PRActions:    prActions,
+			Refresh:      refresh,
 			Darkmode:     conf.Darkmode,
 			Trackers:     conf.Tracking,
 			Logger:       logger,

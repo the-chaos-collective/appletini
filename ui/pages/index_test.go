@@ -5,6 +5,7 @@ import (
 	"errors"
 	"slices"
 	"testing"
+	"time"
 
 	"appletini/config"
 	v2 "appletini/config/migration/v2"
@@ -507,11 +508,11 @@ func TestBuildTreeMergeAndCloseOptions(t *testing.T) {
 		acts     treeActions
 		expected []string
 	}{
-		{name: "your green PR can be merged or closed", group: "My Pull Requests", key: "personal", pr: green, acts: acts, expected: []string{"Open in browser", "Merge", "Close…"}},
-		{name: "your PR waiting for review can only be closed", group: "My Pull Requests", key: "personal", pr: needsReview, acts: acts, expected: []string{"Open in browser", "Close…"}},
-		{name: "running CI is not ready to merge", group: "My Pull Requests", key: "personal", pr: running, acts: acts, expected: []string{"Open in browser", "Close…"}},
-		{name: "someone else's green PR", group: "Appletini", key: "repo_0", pr: green, acts: acts, expected: []string{"Open in browser", "Approve", "Merge", "Close…"}},
-		{name: "someone else's PR needing review", group: "Appletini", key: "repo_0", pr: needsReview, acts: acts, expected: []string{"Open in browser", "Approve", "Close…"}},
+		{name: "your green PR can be merged or closed", group: "My Pull Requests", key: "personal", pr: green, acts: acts, expected: []string{"Open in browser", "Merge", "Close"}},
+		{name: "your PR waiting for review can only be closed", group: "My Pull Requests", key: "personal", pr: needsReview, acts: acts, expected: []string{"Open in browser", "Close"}},
+		{name: "running CI is not ready to merge", group: "My Pull Requests", key: "personal", pr: running, acts: acts, expected: []string{"Open in browser", "Close"}},
+		{name: "someone else's green PR", group: "Appletini", key: "repo_0", pr: green, acts: acts, expected: []string{"Open in browser", "Approve", "Merge", "Close"}},
+		{name: "someone else's PR needing review", group: "Appletini", key: "repo_0", pr: needsReview, acts: acts, expected: []string{"Open in browser", "Approve", "Close"}},
 		{name: "no actions configured", group: "Appletini", key: "repo_0", pr: green, acts: treeActions{quit: func() error { return nil }}, expected: []string{"Open in browser"}},
 	}
 
@@ -524,56 +525,6 @@ func TestBuildTreeMergeAndCloseOptions(t *testing.T) {
 
 			if got := prOptions(t, items, tc.group)[0]; !slices.Equal(got, tc.expected) {
 				t.Fatalf("options %v, expected %v", got, tc.expected)
-			}
-		})
-	}
-}
-
-func TestConfirmed(t *testing.T) {
-	errConfirm := errors.New("no window")
-
-	testCases := []struct {
-		name        string
-		answer      bool
-		confirmErr  error
-		expectedRan bool
-		expectedErr error
-	}{
-		{name: "confirmed runs the action", answer: true, expectedRan: true},
-		{name: "cancelled does nothing", answer: false, expectedRan: false},
-		{name: "popup failure is returned", confirmErr: errConfirm, expectedRan: false, expectedErr: errConfirm},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			ran := false
-
-			var gotTitle, gotMessage, gotLabel string
-
-			confirm := func(title, message, label string, onConfirm func()) error {
-				gotTitle, gotMessage, gotLabel = title, message, label
-				if tc.confirmErr != nil {
-					return tc.confirmErr
-				}
-
-				if tc.answer {
-					onConfirm()
-				}
-
-				return nil
-			}
-
-			err := confirmed(confirm, "Merge #42?", "Add tray", "Merge", func() { ran = true })()
-			if !errors.Is(err, tc.expectedErr) {
-				t.Fatalf("got error %v, expected %v", err, tc.expectedErr)
-			}
-
-			if ran != tc.expectedRan {
-				t.Fatalf("ran = %v, expected %v", ran, tc.expectedRan)
-			}
-
-			if gotTitle != "Merge #42?" || gotMessage != "Add tray" || gotLabel != "Merge" {
-				t.Fatalf("popup got %q / %q / %q", gotTitle, gotMessage, gotLabel)
 			}
 		})
 	}
@@ -643,5 +594,77 @@ func TestImmediate(t *testing.T) {
 
 	if ran != 1 {
 		t.Fatalf("ran %d times, expected 1 (no confirmation step)", ran)
+	}
+}
+
+func TestRequestRefresh(t *testing.T) {
+	cancelled, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	testCases := []struct {
+		name          string
+		ctx           context.Context
+		pending       bool
+		expectedQueue int
+	}{
+		{name: "sends a refresh after the delay", ctx: context.Background(), expectedQueue: 1},
+		{name: "a pending refresh absorbs a second one", ctx: context.Background(), pending: true, expectedQueue: 1},
+		{name: "cancelled before the delay sends nothing", ctx: cancelled, expectedQueue: 0},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			refresh := make(chan struct{}, 1)
+			if tc.pending {
+				refresh <- struct{}{}
+			}
+
+			done := make(chan struct{})
+			go func() {
+				requestRefresh(tc.ctx, 10*time.Millisecond, refresh)
+				close(done)
+			}()
+
+			select {
+			case <-done:
+			case <-time.After(2 * time.Second):
+				t.Fatal("requestRefresh blocked")
+			}
+
+			if got := len(refresh); got != tc.expectedQueue {
+				t.Fatalf("queued refreshes %d, expected %d", got, tc.expectedQueue)
+			}
+		})
+	}
+}
+
+func TestRequestRefreshWaitsForTheDelay(t *testing.T) {
+	refresh := make(chan struct{}, 1)
+	start := time.Now()
+
+	requestRefresh(context.Background(), 50*time.Millisecond, refresh)
+
+	if elapsed := time.Since(start); elapsed < 50*time.Millisecond {
+		t.Fatalf("refresh sent after %v, expected at least 50ms", elapsed)
+	}
+
+	if len(refresh) != 1 {
+		t.Fatal("no refresh was sent")
+	}
+}
+
+func TestRequestRefreshWithoutChannel(t *testing.T) {
+	// Must return immediately instead of waiting the delay.
+	start := time.Now()
+	requestRefresh(context.Background(), time.Hour, nil)
+
+	if time.Since(start) > time.Second {
+		t.Fatal("requestRefresh waited with no channel to send on")
+	}
+}
+
+func TestRefreshDelay(t *testing.T) {
+	if refreshDelay != 2*time.Second {
+		t.Fatalf("refresh delay is %v, expected 2s", refreshDelay)
 	}
 }

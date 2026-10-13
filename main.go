@@ -20,6 +20,8 @@ import (
 type (
 	PRChan     chan map[string][]gitter.PullRequest
 	HasErrChan chan bool
+	// RefreshChan carries early-poll requests from the UI to the poller.
+	RefreshChan chan struct{}
 )
 
 func main() {
@@ -54,11 +56,14 @@ func setupPolling(ctx context.Context, deps *dig.Container) error {
 		conf config.Config,
 		prs PRChan,
 		hasErr HasErrChan,
+		refresh RefreshChan,
 	) error {
+		//exhaustruct:ignore
 		poller := polling.Polling{
 			Logger:    logger,
 			GqlClient: gqlClient,
 			Config:    conf,
+			Refresh:   refresh,
 		}
 
 		err := poller.Setup(flags.MockQueries)

@@ -281,3 +281,49 @@ func TestGetPollDuration(t *testing.T) {
 		}
 	}
 }
+
+func TestPollPRsRefreshPollsEarly(t *testing.T) {
+	conf := validConfig()
+	conf.Poll.Frequency = 3600 // without a refresh, the second poll would be an hour away
+
+	query := &scriptedQuery{
+		results: []map[string][]gitter.PullRequest{{}},
+		errs:    []error{nil},
+	}
+
+	refresh := make(chan struct{}, 1)
+
+	//exhaustruct:ignore
+	p := Polling{
+		Logger:          discardLogger(),
+		GqlClient:       &gittertest.Fake{},
+		Config:          conf,
+		Refresh:         refresh,
+		queryAggregator: query,
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	prs := make(chan map[string][]gitter.PullRequest, 1)
+	hasErr := make(chan bool)
+
+	go func() { _ = p.PollPRs(ctx, prs, hasErr) }()
+
+	<-hasErr // first poll done; now waiting for an hour
+	refresh <- struct{}{}
+
+	select {
+	case <-hasErr: // second poll happened straight away
+	case <-time.After(2 * time.Second):
+		t.Fatal("refresh did not trigger an early poll")
+	}
+
+	query.mu.Lock()
+	calls := query.calls
+	query.mu.Unlock()
+
+	if calls != 2 {
+		t.Fatalf("polled %d times, expected 2", calls)
+	}
+}

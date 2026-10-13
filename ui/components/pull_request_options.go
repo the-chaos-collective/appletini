@@ -37,7 +37,7 @@ func (info PullRequestOptions) Build() ui.SystrayMenu {
 	}{
 		{title: "Approve", action: info.Approve},
 		{title: "Merge", action: info.Merge},
-		{title: "Close…", action: info.Close},
+		{title: "Close", action: info.Close},
 	}
 
 	for _, opt := range optional {

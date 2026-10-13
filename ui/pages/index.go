@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"time"
 
 	"appletini/config"
 	"appletini/gitter"
@@ -42,16 +43,19 @@ type IndexPage struct {
 	Approver Approver
 	// PRActions enables the Merge and Close options; nil hides them.
 	PRActions PRActions
+	// Refresh asks the poller for an early poll; nil disables it.
+	Refresh chan<- struct{}
 }
+
+// refreshDelay is how long after a merge or close the page asks for an
+// early poll, giving GitHub time to update the PR.
+const refreshDelay = 2 * time.Second
 
 // PRActions merges and closes pull requests (pullrequests.Actions in production).
 type PRActions interface {
 	Merge(ctx context.Context, prID string) (pullrequests.PullRequest, error)
 	Close(ctx context.Context, prID string) (pullrequests.PullRequest, error)
 }
-
-// confirmFunc asks the user to confirm and calls onConfirm only if they do.
-type confirmFunc func(title, message, confirmLabel string, onConfirm func()) error
 
 // notifyFunc shows a desktop notification.
 type notifyFunc func(title, content string) error
@@ -276,19 +280,22 @@ func (page *IndexPage) actions() treeActions {
 	}
 
 	if page.PRActions != nil {
-		// Merge runs straight away (it's only offered on green PRs); Close asks first.
+		// Merge and Close run straight away, then ask for a fresh poll so the
+		// menu catches up without waiting for the regular schedule.
 		acts.merge = func(pr gitter.PullRequest) func() error {
 			return immediate(page.background("merging PR", pr, func(ctx context.Context) error {
+				defer requestRefresh(ctx, refreshDelay, page.Refresh)
+
 				return runPRAction(ctx, page.PRActions.Merge, page.systray.Notify, pr, "Merged", "Couldn't merge")
 			}))
 		}
 
 		acts.close = func(pr gitter.PullRequest) func() error {
-			return confirmed(page.systray.Confirm,
-				fmt.Sprintf("Close #%d without merging?", pr.Number), pr.Title, "Close",
-				page.background("closing PR", pr, func(ctx context.Context) error {
-					return runPRAction(ctx, page.PRActions.Close, page.systray.Notify, pr, "Closed", "Couldn't close")
-				}))
+			return immediate(page.background("closing PR", pr, func(ctx context.Context) error {
+				defer requestRefresh(ctx, refreshDelay, page.Refresh)
+
+				return runPRAction(ctx, page.PRActions.Close, page.systray.Notify, pr, "Closed", "Couldn't close")
+			}))
 		}
 	}
 
@@ -307,19 +314,35 @@ func (page *IndexPage) background(what string, pr gitter.PullRequest, fn func(ct
 	}
 }
 
+// requestRefresh waits delay, then asks the poller for an early poll. It gives
+// up if ctx is cancelled, and never blocks: if a refresh is already pending,
+// this one is merged into it.
+func requestRefresh(ctx context.Context, delay time.Duration, refresh chan<- struct{}) {
+	if refresh == nil {
+		return
+	}
+
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+
+	select {
+	case <-ctx.Done():
+		return
+	case <-timer.C:
+	}
+
+	select {
+	case refresh <- struct{}{}:
+	default:
+	}
+}
+
 // immediate returns a menu action that runs run without asking.
 func immediate(run func()) func() error {
 	return func() error {
 		run()
 
 		return nil
-	}
-}
-
-// confirmed returns a menu action that asks for confirmation before running run.
-func confirmed(confirm confirmFunc, title, message, confirmLabel string, run func()) func() error {
-	return func() error {
-		return confirm(title, message, confirmLabel, run)
 	}
 }
 
