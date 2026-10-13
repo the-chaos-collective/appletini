@@ -30,6 +30,7 @@ type pullRequestPersonal struct {
 	ReviewDecision string            `json:"reviewDecision"`
 	Mergeable      string            `json:"mergeable"`
 	Commits        gitter.LastCommit `json:"commits"`
+	ViewerReview   *gitter.Review    `json:"viewerLatestReview"`
 }
 
 func (pr pullRequestPersonal) transform() gitter.PullRequest {
@@ -45,6 +46,7 @@ func (pr pullRequestPersonal) transform() gitter.PullRequest {
 		ReviewDecision: pr.ReviewDecision,
 		Mergeable:      pr.Mergeable,
 		ChecksState:    pr.Commits.ChecksState(),
+		ViewerReview:   pr.ViewerReview.StateOrEmpty(),
 	}
 }
 

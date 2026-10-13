@@ -52,6 +52,9 @@ var ViewerQuery = `query fetchPRs {
 						}
 					}
 					mergeable
+					viewerLatestReview {
+						state
+					}
 					commits(last: 1) {
 						nodes {
 						commit {
