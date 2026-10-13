@@ -9,6 +9,7 @@ import (
 	"appletini/config"
 	v2 "appletini/config/migration/v2"
 	"appletini/gitter"
+	"appletini/pullrequests"
 	"appletini/reviews"
 	"appletini/trackerkey"
 	"appletini/ui"
@@ -482,6 +483,151 @@ func TestBuildTreeHidesApproveOnRedPRs(t *testing.T) {
 
 			if got := prOptions(t, items, "Appletini")[0]; !slices.Equal(got, tc.expected) {
 				t.Fatalf("options %v, expected %v", got, tc.expected)
+			}
+		})
+	}
+}
+
+func TestBuildTreeMergeAndCloseOptions(t *testing.T) {
+	action := func(gitter.PullRequest) func() error { return func() error { return nil } }
+	acts := treeActions{quit: func() error { return nil }, approve: action, merge: action, close: action}
+
+	//exhaustruct:ignore
+	green := gitter.PullRequest{Id: "G", Number: 1, ReviewDecision: "APPROVED", Mergeable: "MERGEABLE", ChecksState: "SUCCESS"}
+	//exhaustruct:ignore
+	needsReview := gitter.PullRequest{Id: "R", Number: 2, ReviewDecision: "REVIEW_REQUIRED", Mergeable: "MERGEABLE"}
+	//exhaustruct:ignore
+	running := gitter.PullRequest{Id: "P", Number: 3, ReviewDecision: "APPROVED", Mergeable: "MERGEABLE", ChecksState: "PENDING"}
+
+	testCases := []struct {
+		name     string
+		group    string
+		key      string
+		pr       gitter.PullRequest
+		acts     treeActions
+		expected []string
+	}{
+		{name: "your green PR can be merged or closed", group: "My Pull Requests", key: "personal", pr: green, acts: acts, expected: []string{"Open in browser", "Merge…", "Close…"}},
+		{name: "your PR waiting for review can only be closed", group: "My Pull Requests", key: "personal", pr: needsReview, acts: acts, expected: []string{"Open in browser", "Close…"}},
+		{name: "running CI is not ready to merge", group: "My Pull Requests", key: "personal", pr: running, acts: acts, expected: []string{"Open in browser", "Close…"}},
+		{name: "someone else's green PR", group: "Appletini", key: "repo_0", pr: green, acts: acts, expected: []string{"Open in browser", "Approve", "Merge…", "Close…"}},
+		{name: "someone else's PR needing review", group: "Appletini", key: "repo_0", pr: needsReview, acts: acts, expected: []string{"Open in browser", "Approve", "Close…"}},
+		{name: "no actions configured", group: "Appletini", key: "repo_0", pr: green, acts: treeActions{quit: func() error { return nil }}, expected: []string{"Open in browser"}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			items, _, err := buildTree(map[string][]gitter.PullRequest{tc.key: {tc.pr}}, trackers(), tc.acts)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if got := prOptions(t, items, tc.group)[0]; !slices.Equal(got, tc.expected) {
+				t.Fatalf("options %v, expected %v", got, tc.expected)
+			}
+		})
+	}
+}
+
+func TestConfirmed(t *testing.T) {
+	errConfirm := errors.New("no window")
+
+	testCases := []struct {
+		name        string
+		answer      bool
+		confirmErr  error
+		expectedRan bool
+		expectedErr error
+	}{
+		{name: "confirmed runs the action", answer: true, expectedRan: true},
+		{name: "cancelled does nothing", answer: false, expectedRan: false},
+		{name: "popup failure is returned", confirmErr: errConfirm, expectedRan: false, expectedErr: errConfirm},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ran := false
+
+			var gotTitle, gotMessage, gotLabel string
+
+			confirm := func(title, message, label string, onConfirm func()) error {
+				gotTitle, gotMessage, gotLabel = title, message, label
+				if tc.confirmErr != nil {
+					return tc.confirmErr
+				}
+
+				if tc.answer {
+					onConfirm()
+				}
+
+				return nil
+			}
+
+			err := confirmed(confirm, "Merge #42?", "Add tray", "Merge", func() { ran = true })()
+			if !errors.Is(err, tc.expectedErr) {
+				t.Fatalf("got error %v, expected %v", err, tc.expectedErr)
+			}
+
+			if ran != tc.expectedRan {
+				t.Fatalf("ran = %v, expected %v", ran, tc.expectedRan)
+			}
+
+			if gotTitle != "Merge #42?" || gotMessage != "Add tray" || gotLabel != "Merge" {
+				t.Fatalf("popup got %q / %q / %q", gotTitle, gotMessage, gotLabel)
+			}
+		})
+	}
+}
+
+func TestRunPRAction(t *testing.T) {
+	errGitHub := errors.New("Pull request is not mergeable")
+	errNotify := errors.New("notifications unavailable")
+
+	//exhaustruct:ignore
+	pr := gitter.PullRequest{Id: "PR_42", Number: 42, Title: "Add tray"}
+
+	testCases := []struct {
+		name            string
+		doErr           error
+		notifyErr       error
+		expectedTitle   string
+		expectedContent string
+		expectedErrs    []error
+	}{
+		{name: "success", expectedTitle: "Merged #42", expectedContent: "Add tray"},
+		{name: "GitHub error", doErr: errGitHub, expectedTitle: "Couldn't merge #42", expectedContent: errGitHub.Error(), expectedErrs: []error{errGitHub}},
+		{name: "GitHub and notification errors", doErr: errGitHub, notifyErr: errNotify, expectedTitle: "Couldn't merge #42", expectedContent: errGitHub.Error(), expectedErrs: []error{errGitHub, errNotify}},
+		{name: "notification error on success", notifyErr: errNotify, expectedTitle: "Merged #42", expectedContent: "Add tray", expectedErrs: []error{errNotify}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var gotID, gotTitle, gotContent string
+
+			do := func(_ context.Context, id string) (pullrequests.PullRequest, error) {
+				gotID = id
+				return pullrequests.PullRequest{}, tc.doErr
+			}
+
+			notify := func(title, content string) error {
+				gotTitle, gotContent = title, content
+				return tc.notifyErr
+			}
+
+			err := runPRAction(context.Background(), do, notify, pr, "Merged", "Couldn't merge")
+
+			for _, want := range tc.expectedErrs {
+				if !errors.Is(err, want) {
+					t.Fatalf("error %v does not include %v", err, want)
+				}
+			}
+
+			if len(tc.expectedErrs) == 0 && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if gotID != "PR_42" || gotTitle != tc.expectedTitle || gotContent != tc.expectedContent {
+				t.Fatalf("ran on %q, notified %q / %q", gotID, gotTitle, gotContent)
 			}
 		})
 	}

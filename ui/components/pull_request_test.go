@@ -140,3 +140,37 @@ func TestApproveOption(t *testing.T) {
 		t.Fatalf("approve ran %d times, expected 1", approved)
 	}
 }
+
+func TestMergeAndCloseOptions(t *testing.T) {
+	noop := func() error { return nil }
+
+	testCases := []struct {
+		name     string
+		opts     components.PullRequestOptions
+		expected []string
+	}{
+		{name: "all actions", opts: components.PullRequestOptions{Approve: noop, Merge: noop, Close: noop}, expected: []string{"Open in browser", "Approve", "Merge…", "Close…"}},
+		{name: "close only", opts: components.PullRequestOptions{Close: noop}, expected: []string{"Open in browser", "Close…"}},
+		{name: "merge and close", opts: components.PullRequestOptions{Merge: noop, Close: noop}, expected: []string{"Open in browser", "Merge…", "Close…"}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			menu := tc.opts.Build()
+
+			got := make([]string, 0, len(menu.Items))
+			for _, item := range menu.Items {
+				button, ok := item.(ui.SystrayButton)
+				if !ok {
+					t.Fatalf("option is %T", item)
+				}
+
+				got = append(got, button.Title)
+			}
+
+			if strings.Join(got, ",") != strings.Join(tc.expected, ",") {
+				t.Fatalf("got %v, expected %v", got, tc.expected)
+			}
+		})
+	}
+}

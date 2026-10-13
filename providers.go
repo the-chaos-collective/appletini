@@ -8,6 +8,7 @@ import (
 	"appletini/config/migration"
 	"appletini/gitter"
 	"appletini/logging"
+	"appletini/pullrequests"
 	"appletini/reviews"
 	"appletini/ui/pages"
 
@@ -90,6 +91,14 @@ func setupProviders(deps *dig.Container) error {
 		return err
 	}
 
+	// * Merge and Close options
+	err = deps.Provide(func(client gitter.Mutator) pullrequests.Actions {
+		return pullrequests.Actions{Client: client}
+	})
+	if err != nil {
+		return err
+	}
+
 	// * Reviews (Approve option)
 	err = deps.Provide(func(client gitter.Mutator) reviews.Approver {
 		return reviews.Approver{Client: client}
@@ -121,12 +130,14 @@ func setupProviders(deps *dig.Container) error {
 		prs PRChan,
 		hasErr HasErrChan,
 		approver reviews.Approver,
+		prActions pullrequests.Actions,
 	) *pages.IndexPage {
 		//exhaustruct:ignore
 		return &pages.IndexPage{
 			PullRequests: prs,
 			HasErr:       hasErr,
 			Approver:     approver,
+			PRActions:    prActions,
 			Darkmode:     conf.Darkmode,
 			Trackers:     conf.Tracking,
 			Logger:       logger,

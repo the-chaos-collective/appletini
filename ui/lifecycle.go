@@ -8,7 +8,9 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/widget"
 )
 
 var (
@@ -17,6 +19,7 @@ var (
 	ErrNilItem    = errors.New("menu item must not be nil")
 	ErrNilSubmenu = errors.New("submenu must not be nil")
 	ErrBadItem    = errors.New("unsupported menu item")
+	ErrNilAction  = errors.New("confirm action must not be nil")
 )
 
 func (s *Systray) createApp() error {
@@ -96,6 +99,43 @@ func (s *Systray) Notify(title, content string) error {
 	}
 
 	fyneApp.SendNotification(fyne.NewNotification(title, content))
+
+	return nil
+}
+
+// Confirm opens a small window asking the user to confirm an action. onConfirm
+// runs only if they press the confirm button; cancelling or closing the window
+// does nothing.
+func (s *Systray) Confirm(title, message, confirmLabel string, onConfirm func()) error {
+	s.mu.Lock()
+	fyneApp := s.fyneApp
+	s.mu.Unlock()
+
+	if fyneApp == nil {
+		return ErrNotSetup
+	}
+
+	if onConfirm == nil {
+		return ErrNilAction
+	}
+
+	win := fyneApp.NewWindow(title)
+	win.Resize(fyne.NewSize(380, 180))
+	win.CenterOnScreen()
+
+	confirm := dialog.NewConfirm(title, message, func(ok bool) {
+		win.Close()
+
+		if ok {
+			onConfirm()
+		}
+	}, win)
+	confirm.SetDismissText("Cancel")
+	confirm.SetConfirmText(confirmLabel)
+	confirm.SetConfirmImportance(widget.DangerImportance)
+
+	win.Show()
+	confirm.Show()
 
 	return nil
 }

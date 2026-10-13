@@ -12,6 +12,9 @@ type PullRequestOptions struct {
 	// Approve approves the PR. When nil (e.g. for your own PRs, which GitHub
 	// won't let you approve) the Approve option is not shown.
 	Approve func() error
+	// Merge and Close are shown only when non-nil.
+	Merge func() error
+	Close func() error
 }
 
 func (info PullRequestOptions) Build() ui.SystrayMenu {
@@ -28,11 +31,19 @@ func (info PullRequestOptions) Build() ui.SystrayMenu {
 		},
 	}
 
-	if info.Approve != nil {
-		items = append(items, ui.SystrayButton{
-			Title:  "Approve",
-			Action: info.Approve,
-		})
+	optional := []struct {
+		title  string
+		action func() error
+	}{
+		{title: "Approve", action: info.Approve},
+		{title: "Merge…", action: info.Merge},
+		{title: "Close…", action: info.Close},
+	}
+
+	for _, opt := range optional {
+		if opt.action != nil {
+			items = append(items, ui.SystrayButton{Title: opt.title, Action: opt.action})
+		}
 	}
 
 	return ui.SystrayMenu{Items: items}

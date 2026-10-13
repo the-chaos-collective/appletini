@@ -9,6 +9,7 @@ import (
 	"appletini/config"
 	"appletini/gitter"
 	"appletini/logging"
+	"appletini/pullrequests"
 	"appletini/reviews"
 	"appletini/trackerkey"
 	"appletini/ui"
@@ -39,13 +40,29 @@ type IndexPage struct {
 	Logger       logging.Logger
 	// Approver enables the Approve option on other people's PRs; nil hides it.
 	Approver Approver
+	// PRActions enables the Merge and Close options; nil hides them.
+	PRActions PRActions
 }
+
+// PRActions merges and closes pull requests (pullrequests.Actions in production).
+type PRActions interface {
+	Merge(ctx context.Context, prID string) (pullrequests.PullRequest, error)
+	Close(ctx context.Context, prID string) (pullrequests.PullRequest, error)
+}
+
+// confirmFunc asks the user to confirm and calls onConfirm only if they do.
+type confirmFunc func(title, message, confirmLabel string, onConfirm func()) error
+
+// notifyFunc shows a desktop notification.
+type notifyFunc func(title, content string) error
 
 // treeActions are the callbacks the menu items run.
 type treeActions struct {
 	quit func() error
-	// approve returns the Approve action for a PR, or nil to hide the option.
+	// approve, merge and close return the action for a PR, or nil to hide it.
 	approve func(pr gitter.PullRequest) func() error
+	merge   func(pr gitter.PullRequest) func() error
+	close   func(pr gitter.PullRequest) func() error
 }
 
 // iconState is what the tray icon reflects. green/red come from the user's
@@ -191,6 +208,16 @@ func buildTree(
 				approve = acts.approve(pr)
 			}
 
+			// Merge only when the PR is ready (green); Close is always offered.
+			var merge, closePR func() error
+			if status.ShowGreenIcon && acts.merge != nil {
+				merge = acts.merge(pr)
+			}
+
+			if acts.close != nil {
+				closePR = acts.close(pr)
+			}
+
 			prList = append(prList, components.PullRequest{
 				Title:       pr.Title,
 				Number:      pr.Number,
@@ -199,6 +226,8 @@ func buildTree(
 				Permalink:   pr.Permalink,
 				Status:      status,
 				Approve:     approve,
+				Merge:       merge,
+				Close:       closePR,
 			}.Build())
 
 			if key.Kind == trackerkey.Personal {
@@ -246,7 +275,63 @@ func (page *IndexPage) actions() treeActions {
 		}
 	}
 
+	if page.PRActions != nil {
+		acts.merge = func(pr gitter.PullRequest) func() error {
+			return confirmed(page.systray.Confirm,
+				fmt.Sprintf("Merge #%d?", pr.Number), pr.Title, "Merge",
+				page.background("merging PR", pr, func(ctx context.Context) error {
+					return runPRAction(ctx, page.PRActions.Merge, page.systray.Notify, pr, "Merged", "Couldn't merge")
+				}))
+		}
+
+		acts.close = func(pr gitter.PullRequest) func() error {
+			return confirmed(page.systray.Confirm,
+				fmt.Sprintf("Close #%d without merging?", pr.Number), pr.Title, "Close",
+				page.background("closing PR", pr, func(ctx context.Context) error {
+					return runPRAction(ctx, page.PRActions.Close, page.systray.Notify, pr, "Closed", "Couldn't close")
+				}))
+		}
+	}
+
 	return acts
+}
+
+// background returns a function that runs fn off the UI thread and logs its error.
+func (page *IndexPage) background(what string, pr gitter.PullRequest, fn func(ctx context.Context) error) func() {
+	return func() {
+		go func() {
+			err := fn(page.ctx)
+			if err != nil {
+				page.Logger.Error(what, "number", pr.Number, "err", err)
+			}
+		}()
+	}
+}
+
+// confirmed returns a menu action that asks for confirmation before running run.
+func confirmed(confirm confirmFunc, title, message, confirmLabel string, run func()) func() error {
+	return func() error {
+		return confirm(title, message, confirmLabel, run)
+	}
+}
+
+// runPRAction runs do on pr and reports the outcome as a desktop notification,
+// e.g. "Merged #42" or "Couldn't merge #42" with GitHub's reason.
+func runPRAction(
+	ctx context.Context,
+	do func(ctx context.Context, prID string) (pullrequests.PullRequest, error),
+	notify notifyFunc,
+	pr gitter.PullRequest,
+	done, failed string,
+) error {
+	_, err := do(ctx, pr.Id)
+	if err != nil {
+		notifyErr := notify(fmt.Sprintf("%s #%d", failed, pr.Number), err.Error())
+
+		return errors.Join(err, notifyErr)
+	}
+
+	return notify(fmt.Sprintf("%s #%d", done, pr.Number), pr.Title)
 }
 
 // approvalComment is posted with every approval made from the tray.

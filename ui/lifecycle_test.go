@@ -145,6 +145,8 @@ func TestNotSetUp(t *testing.T) {
 		{name: "SetMenu", call: func() error { return s.SetMenu(nil) }},
 		{name: "SetIcon", call: func() error { return s.SetIcon(nil) }},
 		{name: "Run", call: s.Run},
+		{name: "Notify", call: func() error { return s.Notify("t", "c") }},
+		{name: "Confirm", call: func() error { return s.Confirm("t", "m", "OK", func() {}) }},
 	}
 
 	for _, tc := range testCases {
