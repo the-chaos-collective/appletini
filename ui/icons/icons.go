@@ -70,10 +70,68 @@ var ResIconBothDark = &fyne.StaticResource{
 	StaticContent: iconBothDark,
 }
 
-//go:embed assets/warning.png
-var iconWarning []byte
+// Error variants: same badges, logo tinted amber while polling is failing.
 
-var ResIconWarning = &fyne.StaticResource{
-	StaticName:    "warning.png",
-	StaticContent: iconWarning,
+//go:embed assets/tray1_err.png
+var iconDefaultErr []byte
+
+var ResIconDefaultErr = &fyne.StaticResource{
+	StaticName:    "tray1_err.png",
+	StaticContent: iconDefaultErr,
+}
+
+//go:embed assets/tray2_err.png
+var iconReviewableErr []byte
+
+var ResIconReviewableErr = &fyne.StaticResource{
+	StaticName:    "tray2_err.png",
+	StaticContent: iconReviewableErr,
+}
+
+//go:embed assets/tray3_err.png
+var iconMergeableErr []byte
+
+var ResIconMergeableErr = &fyne.StaticResource{
+	StaticName:    "tray3_err.png",
+	StaticContent: iconMergeableErr,
+}
+
+//go:embed assets/tray4_err.png
+var iconBothErr []byte
+
+var ResIconBothErr = &fyne.StaticResource{
+	StaticName:    "tray4_err.png",
+	StaticContent: iconBothErr,
+}
+
+//go:embed assets/tray1_err_dark.png
+var iconDefaultErrDark []byte
+
+var ResIconDefaultErrDark = &fyne.StaticResource{
+	StaticName:    "tray1_err_dark.png",
+	StaticContent: iconDefaultErrDark,
+}
+
+//go:embed assets/tray2_err_dark.png
+var iconReviewableErrDark []byte
+
+var ResIconReviewableErrDark = &fyne.StaticResource{
+	StaticName:    "tray2_err_dark.png",
+	StaticContent: iconReviewableErrDark,
+}
+
+//go:embed assets/tray3_err_dark.png
+var iconMergeableErrDark []byte
+
+var ResIconMergeableErrDark = &fyne.StaticResource{
+	StaticName:    "tray3_err_dark.png",
+	StaticContent: iconMergeableErrDark,
+}
+
+//go:embed assets/tray4_err_dark.png
+var iconBothErrDark []byte
+
+var ResIconBothErrDark = &fyne.StaticResource{
+	StaticName:    "tray4_err_dark.png",
+	StaticContent: iconBothErrDark,
 }
