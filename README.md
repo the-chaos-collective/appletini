@@ -49,11 +49,11 @@ Approving needs a token that can write pull request reviews; a classic token wit
 `repo` scope can. The result (approved, or why not) shows as a desktop notification,
 and the menu updates on the next poll.
 
-PRs also have **Merge…** (only when the PR is green: approved, no conflicts, checks
-passing) and **Close…** options. Both open a confirmation popup first, so nothing is
-merged or closed by accident. Merge uses the repository's default merge method. Both
-need a token with write access to the repository, and report the result as a desktop
-notification.
+PRs also have **Merge** (only when the PR is green: approved, no conflicts, checks
+passing) and **Close…** options. Merge runs as soon as you click it; Close opens a
+confirmation popup first, so nothing is closed by accident. Merge uses the repository's
+default merge method. Both need a token with write access to the repository, and report
+the result as a desktop notification.
 
 - github:
   - gqlAPI: GitHub GraphQL endpoint (`https://api.github.com/graphql`, or your GitHub Enterprise one)

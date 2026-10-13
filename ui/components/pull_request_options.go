@@ -36,7 +36,7 @@ func (info PullRequestOptions) Build() ui.SystrayMenu {
 		action func() error
 	}{
 		{title: "Approve", action: info.Approve},
-		{title: "Merge…", action: info.Merge},
+		{title: "Merge", action: info.Merge},
 		{title: "Close…", action: info.Close},
 	}
 

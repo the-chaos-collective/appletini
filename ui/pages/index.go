@@ -276,12 +276,11 @@ func (page *IndexPage) actions() treeActions {
 	}
 
 	if page.PRActions != nil {
+		// Merge runs straight away (it's only offered on green PRs); Close asks first.
 		acts.merge = func(pr gitter.PullRequest) func() error {
-			return confirmed(page.systray.Confirm,
-				fmt.Sprintf("Merge #%d?", pr.Number), pr.Title, "Merge",
-				page.background("merging PR", pr, func(ctx context.Context) error {
-					return runPRAction(ctx, page.PRActions.Merge, page.systray.Notify, pr, "Merged", "Couldn't merge")
-				}))
+			return immediate(page.background("merging PR", pr, func(ctx context.Context) error {
+				return runPRAction(ctx, page.PRActions.Merge, page.systray.Notify, pr, "Merged", "Couldn't merge")
+			}))
 		}
 
 		acts.close = func(pr gitter.PullRequest) func() error {
@@ -305,6 +304,15 @@ func (page *IndexPage) background(what string, pr gitter.PullRequest, fn func(ct
 				page.Logger.Error(what, "number", pr.Number, "err", err)
 			}
 		}()
+	}
+}
+
+// immediate returns a menu action that runs run without asking.
+func immediate(run func()) func() error {
+	return func() error {
+		run()
+
+		return nil
 	}
 }
 

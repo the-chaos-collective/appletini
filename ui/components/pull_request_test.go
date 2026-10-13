@@ -149,9 +149,9 @@ func TestMergeAndCloseOptions(t *testing.T) {
 		opts     components.PullRequestOptions
 		expected []string
 	}{
-		{name: "all actions", opts: components.PullRequestOptions{Approve: noop, Merge: noop, Close: noop}, expected: []string{"Open in browser", "Approve", "Merge…", "Close…"}},
+		{name: "all actions", opts: components.PullRequestOptions{Approve: noop, Merge: noop, Close: noop}, expected: []string{"Open in browser", "Approve", "Merge", "Close…"}},
 		{name: "close only", opts: components.PullRequestOptions{Close: noop}, expected: []string{"Open in browser", "Close…"}},
-		{name: "merge and close", opts: components.PullRequestOptions{Merge: noop, Close: noop}, expected: []string{"Open in browser", "Merge…", "Close…"}},
+		{name: "merge and close", opts: components.PullRequestOptions{Merge: noop, Close: noop}, expected: []string{"Open in browser", "Merge", "Close…"}},
 	}
 
 	for _, tc := range testCases {

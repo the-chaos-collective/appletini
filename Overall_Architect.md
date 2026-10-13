@@ -45,7 +45,7 @@ main ──dig──▶ config ─▶ gitter.GraphQLClient (Querier)
 | `ui` | Fyne systray wrapper: menu model, `SetMenu`/`SetIcon` guarded by one mutex, `Notify`, `Confirm` popup, `Quit` | `logging`, fyne |
 | `ui/components` | Menu items for a PR and its options | `ui`, `status`, `actions` |
 | `ui/icons` | Embedded tray icons | fyne |
-| `ui/pages` | Index page: one loop that turns poller updates into the menu and the tray icon; runs Approve, and Merge/Close after a confirmation popup, in the background and reports the result as a notification | `ui`, `ui/components`, `ui/icons`, `config`, `gitter`, `pullrequests`, `reviews`, `trackerkey` |
+| `ui/pages` | Index page: one loop that turns poller updates into the menu and the tray icon; runs Approve, Merge, and Close (after a confirmation popup) in the background and reports the result as a notification | `ui`, `ui/components`, `ui/icons`, `config`, `gitter`, `pullrequests`, `reviews`, `trackerkey` |
 | `logging` | `Logger` interface and charmbracelet/log implementation | none |
 
 There are no import cycles. `trackerkey`, `status`, `logging`,

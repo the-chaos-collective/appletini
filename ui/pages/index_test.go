@@ -507,10 +507,10 @@ func TestBuildTreeMergeAndCloseOptions(t *testing.T) {
 		acts     treeActions
 		expected []string
 	}{
-		{name: "your green PR can be merged or closed", group: "My Pull Requests", key: "personal", pr: green, acts: acts, expected: []string{"Open in browser", "Merge…", "Close…"}},
+		{name: "your green PR can be merged or closed", group: "My Pull Requests", key: "personal", pr: green, acts: acts, expected: []string{"Open in browser", "Merge", "Close…"}},
 		{name: "your PR waiting for review can only be closed", group: "My Pull Requests", key: "personal", pr: needsReview, acts: acts, expected: []string{"Open in browser", "Close…"}},
 		{name: "running CI is not ready to merge", group: "My Pull Requests", key: "personal", pr: running, acts: acts, expected: []string{"Open in browser", "Close…"}},
-		{name: "someone else's green PR", group: "Appletini", key: "repo_0", pr: green, acts: acts, expected: []string{"Open in browser", "Approve", "Merge…", "Close…"}},
+		{name: "someone else's green PR", group: "Appletini", key: "repo_0", pr: green, acts: acts, expected: []string{"Open in browser", "Approve", "Merge", "Close…"}},
 		{name: "someone else's PR needing review", group: "Appletini", key: "repo_0", pr: needsReview, acts: acts, expected: []string{"Open in browser", "Approve", "Close…"}},
 		{name: "no actions configured", group: "Appletini", key: "repo_0", pr: green, acts: treeActions{quit: func() error { return nil }}, expected: []string{"Open in browser"}},
 	}
@@ -630,5 +630,18 @@ func TestRunPRAction(t *testing.T) {
 				t.Fatalf("ran on %q, notified %q / %q", gotID, gotTitle, gotContent)
 			}
 		})
+	}
+}
+
+func TestImmediate(t *testing.T) {
+	ran := 0
+
+	err := immediate(func() { ran++ })()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if ran != 1 {
+		t.Fatalf("ran %d times, expected 1 (no confirmation step)", ran)
 	}
 }
