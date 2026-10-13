@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"sync"
+
 	"appletini/logging"
 
 	"fyne.io/fyne/v2"
@@ -15,8 +17,9 @@ type Component interface {
 }
 
 type Lifecycle interface {
-	Setup()
-	Run()
+	Setup() error
+	Run() error
+	Quit()
 }
 
 const (
@@ -27,8 +30,13 @@ const (
 
 type ItemType int
 
+// Systray wraps the fyne tray app. The menu and icon are updated from
+// different goroutines, so mu guards both (a single mutex, so there is no
+// lock ordering to get wrong).
 type Systray struct {
-	fyneApp  *fyne.App
+	mu       sync.Mutex
+	quitOnce sync.Once
+	fyneApp  fyne.App
 	title    string
 	icon     fyne.Resource
 	MainMenu *SystrayMenu

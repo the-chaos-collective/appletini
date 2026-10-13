@@ -1,7 +1,7 @@
 query PRs {
 {{ range .Trackers }}
-  {{ .Id }}: repository(name: "{{ .Repo }}", owner: "{{ .Owner }}") {
-    label(name: "{{ .Label }}") {
+  {{ .Id }}: repository(name: {{ quote .Repo }}, owner: {{ quote .Owner }}) {
+    label(name: {{ quote .Label }}) {
       pullRequests(
         orderBy: { field: CREATED_AT, direction: ASC }
         first: {{$.PrAmount}}
@@ -38,6 +38,7 @@ fragment getPullRequest on PullRequestConnection {
 
 fragment getReviewer on PullRequest {
   reviews(first: {{ .ReviewAmount }}) {
+    totalCount
     edges {
       node {
         state

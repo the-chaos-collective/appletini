@@ -22,12 +22,32 @@ tasks:
       - go fmt ./...
     silent: true
 
+  test:
+    desc: run all tests (headless, no display or GL headers needed)
+    cmds:
+      - go test -tags ci ./...
+
+  test:race:
+    desc: run all tests with the race detector
+    cmds:
+      - go test -tags ci -race ./...
+
+  test:cover:
+    desc: run all tests and print coverage per package
+    cmds:
+      - go test -tags ci -cover ./...
+
+  lint:
+    desc: run golangci-lint (v1 config)
+    cmds:
+      - go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 run --build-tags ci ./...
+
   run:
     desc: runs app
     deps:
       - format
     cmds:
-      - APPLETINI_LOG_LEVEL=debug go run *.go
+      - APPLETINI_LOG_LEVEL=debug go run .
     silent: true
 
   build:
@@ -37,7 +57,7 @@ tasks:
     cmds:
       - mkdir -p dist/
       - task: clean
-      - go build -o dist/main *.go
+      - go build -o dist/main .
       - sudo chmod +x ./dist/main
       - cp config.json dist/
       - APPLETINI_LOG_LEVEL=debug ./dist/main

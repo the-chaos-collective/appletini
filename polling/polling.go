@@ -1,6 +1,8 @@
 package polling
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -14,11 +16,22 @@ import (
 	"appletini/queries/by_label"
 	"appletini/queries/by_repo"
 	"appletini/queries/personal"
+	"appletini/trackerkey"
+)
+
+const (
+	reviewAmount   = 10
+	commentsAmount = 10
+)
+
+var (
+	ErrNotSetup  = errors.New("polling has not been set up")
+	ErrNilClient = errors.New("graphql client must not be nil")
 )
 
 type Polling struct {
 	Logger          logging.Logger
-	GqlClient       *gitter.GraphQLClient
+	GqlClient       gitter.Querier
 	Config          config.Config
 	queryAggregator queries.Query
 }
@@ -32,8 +45,13 @@ func setupPersonalQuery() (queries.Query, error) {
 func (p Polling) setupLabelQuery() (queries.Query, error) {
 	trackers := []by_label.Tracker{}
 	for idx, tracker := range p.Config.Tracking.ByLabel {
+		id, err := trackerkey.New(trackerkey.Label, idx)
+		if err != nil {
+			return nil, err
+		}
+
 		trackers = append(trackers, by_label.Tracker{
-			Id:    fmt.Sprintf("label_%d", idx),
+			Id:    id,
 			Title: tracker.Title,
 			Owner: tracker.Owner,
 			Repo:  tracker.RepoName,
@@ -44,16 +62,21 @@ func (p Polling) setupLabelQuery() (queries.Query, error) {
 	return by_label.MakeQuery(by_label.Config{
 		Trackers:       trackers,
 		PrAmount:       p.Config.ItemCount,
-		ReviewAmount:   10,
-		CommentsAmount: 10,
+		ReviewAmount:   reviewAmount,
+		CommentsAmount: commentsAmount,
 	})
 }
 
 func (p Polling) setupRepoQuery() (queries.Query, error) {
 	trackers := []by_repo.Tracker{}
 	for idx, tracker := range p.Config.Tracking.ByRepo {
+		id, err := trackerkey.New(trackerkey.Repo, idx)
+		if err != nil {
+			return nil, err
+		}
+
 		trackers = append(trackers, by_repo.Tracker{
-			Id:    fmt.Sprintf("repo_%d", idx),
+			Id:    id,
 			Title: tracker.Title,
 			Owner: tracker.Owner,
 			Repo:  tracker.RepoName,
@@ -63,16 +86,21 @@ func (p Polling) setupRepoQuery() (queries.Query, error) {
 	return by_repo.MakeQuery(by_repo.Config{
 		Trackers:       trackers,
 		PrAmount:       p.Config.ItemCount,
-		ReviewAmount:   10,
-		CommentsAmount: 10,
+		ReviewAmount:   reviewAmount,
+		CommentsAmount: commentsAmount,
 	})
 }
 
 func (p Polling) setupAuthorQuery() (queries.Query, error) {
 	trackers := []by_author.Tracker{}
 	for idx, tracker := range p.Config.Tracking.ByAuthor {
+		id, err := trackerkey.New(trackerkey.Author, idx)
+		if err != nil {
+			return nil, err
+		}
+
 		trackers = append(trackers, by_author.Tracker{
-			Id:      fmt.Sprintf("author_%d", idx),
+			Id:      id,
 			Title:   tracker.Title,
 			Owner:   tracker.Owner,
 			Repo:    tracker.RepoName,
@@ -83,8 +111,8 @@ func (p Polling) setupAuthorQuery() (queries.Query, error) {
 	return by_author.MakeQuery(by_author.Config{
 		Trackers:       trackers,
 		PrAmount:       p.Config.ItemCount,
-		ReviewAmount:   10,
-		CommentsAmount: 10,
+		ReviewAmount:   reviewAmount,
+		CommentsAmount: commentsAmount,
 	})
 }
 
@@ -127,26 +155,73 @@ func (p *Polling) Setup(mock bool) error {
 	return nil
 }
 
-func (p Polling) PollPRs(prs chan<- map[string][]gitter.PullRequest, hasErr chan<- bool) {
-	hasher := hasher.Hasher{
+// PollPRs polls until ctx is cancelled. Each round reports whether polling
+// failed on hasErr and sends the PRs on prs when they changed. It returns nil
+// on cancellation, which is the normal way to stop it.
+func (p Polling) PollPRs(ctx context.Context, prs chan<- map[string][]gitter.PullRequest, hasErr chan<- bool) error {
+	if p.queryAggregator == nil {
+		return ErrNotSetup
+	}
+
+	if p.GqlClient == nil {
+		return ErrNilClient
+	}
+
+	prHasher := hasher.Hasher{
 		Logger: p.Logger,
 	}
 
 	for {
-		trackingPrs, err := p.queryAggregator.GetAll(*p.GqlClient)
-		if err != nil {
-			p.Logger.Errorf("When polling for PRs: %v", err)
-			hasErr <- true
-		} else {
-			hasErr <- false
+		err := p.poll(ctx, &prHasher, prs, hasErr)
+		if ctx.Err() != nil {
+			return nil
 		}
 
-		hasher.Check(trackingPrs, prs)
+		if err != nil {
+			return err
+		}
 
-		time.Sleep(p.getPollDuration())
+		timer := time.NewTimer(p.getPollDuration())
+
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return nil
+		case <-timer.C:
+		}
 	}
 }
 
+// poll runs a single polling round.
+func (p Polling) poll(
+	ctx context.Context,
+	prHasher *hasher.Hasher,
+	prs chan<- map[string][]gitter.PullRequest,
+	hasErr chan<- bool,
+) error {
+	trackingPrs, queryErr := p.queryAggregator.GetAll(ctx, p.GqlClient)
+	if ctx.Err() != nil {
+		return nil
+	}
+
+	if queryErr != nil {
+		p.Logger.Errorf("When polling for PRs: %v", queryErr)
+	}
+
+	select {
+	case hasErr <- queryErr != nil:
+	case <-ctx.Done():
+		return nil
+	}
+
+	err := prHasher.Check(ctx, trackingPrs, prs)
+	if err != nil && ctx.Err() == nil {
+		return fmt.Errorf("publishing PRs: %w", err)
+	}
+
+	return nil
+}
+
 func (p Polling) getPollDuration() time.Duration {
-	return time.Duration(p.Config.Poll.Frequency * int(time.Second))
+	return time.Duration(p.Config.Poll.Frequency) * time.Second
 }

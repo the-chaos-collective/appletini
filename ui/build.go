@@ -6,8 +6,9 @@ import (
 	"fyne.io/fyne/v2"
 )
 
-func MakeSystray(title string, icon fyne.Resource, logger logging.Logger) Systray {
-	return Systray{
+func MakeSystray(title string, icon fyne.Resource, logger logging.Logger) *Systray {
+	//exhaustruct:ignore
+	return &Systray{
 		fyneApp: nil,
 		title:   title,
 		icon:    icon,

@@ -19,6 +19,18 @@ linters:
     - funlen
     - gci
 
+issues:
+  exclude-rules:
+    # Table tests deliberately set only the fields each case needs, and the
+    # env var *names* used as fake token sources trip the credentials check.
+    - path: _test\.go
+      linters:
+        - exhaustruct
+    - path: _test\.go
+      linters:
+        - gosec
+      text: "G101"
+
 severity:
   default-severity: error
   rules:

@@ -1,8 +1,12 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"go.uber.org/dig"
 
@@ -14,37 +18,39 @@ import (
 )
 
 type (
-	PRChan            chan map[string][]gitter.PullRequest
-	HasErrChan        chan bool
-	ShowGreenIconChan chan bool
-	ShowRedIconChan   chan bool
+	PRChan     chan map[string][]gitter.PullRequest
+	HasErrChan chan bool
 )
 
 func main() {
+	// Cancelled on Ctrl+C / SIGTERM, or when the tray app quits.
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
 	deps := dig.New()
 
 	err := setupProviders(deps)
 	ehp(deps, err)
 
-	err = setupPolling(deps)
+	err = setupPolling(ctx, deps)
 	ehp(deps, err)
 
-	err = render(deps)
+	err = render(ctx, deps)
 	ehp(deps, err)
 }
 
-func render(deps *dig.Container) error {
-	return deps.Invoke(func(indexPage pages.IndexPage, logger logging.Logger) {
+func render(ctx context.Context, deps *dig.Container) error {
+	return deps.Invoke(func(indexPage *pages.IndexPage, logger logging.Logger) error {
 		logger.Info("Running")
-		indexPage.Run()
+		return indexPage.Run(ctx)
 	})
 }
 
-func setupPolling(deps *dig.Container) error {
+func setupPolling(ctx context.Context, deps *dig.Container) error {
 	return deps.Invoke(func(
 		flags FeatureFlags,
 		logger logging.Logger,
-		gqlClient *gitter.GraphQLClient,
+		gqlClient gitter.Querier,
 		conf config.Config,
 		prs PRChan,
 		hasErr HasErrChan,
@@ -60,7 +66,12 @@ func setupPolling(deps *dig.Container) error {
 			return err
 		}
 
-		go poller.PollPRs(prs, hasErr)
+		go func() {
+			err := poller.PollPRs(ctx, prs, hasErr)
+			if err != nil {
+				logger.Error("polling stopped", "err", err)
+			}
+		}()
 
 		return nil
 	})

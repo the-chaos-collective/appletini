@@ -22,14 +22,23 @@ You may find pre-built binaries for your operating system [here](https://github.
 
 ### Configuration
 
-A `config.json` file will be generated next to the binary. You may use it to configure appletini.
+Appletini reads `config.json` from the **current working directory**, that is,
+the directory you launch it from, not necessarily the directory the binary is in.
+If the file doesn't exist there, a default one is generated in that directory.
+When starting Appletini from a desktop shortcut or launcher, make sure its
+working directory is set to the folder holding your `config.json`.
 
 Create an env variable on your system holding your personal access token (I used
 a classic one with repo, user and projects permission).
 You may use any name for it, just make sure to use the same name in the config file.
 
-- token: NAME of the env variable that holds your github personal access token
-- trackers: your trackers (different filters to find PRs you're interested in)
+- github:
+  - gqlAPI: GitHub GraphQL endpoint (`https://api.github.com/graphql`, or your GitHub Enterprise one)
+  - token: NAME of the env variable that holds your github personal access token (not the token itself)
+- poll:
+  - frequencySeconds: seconds between polls. GitHub rate-limits the API, so keep this reasonable
+- itemCount: maximum number of PRs fetched per tracker
+- tracking: your trackers (different filters to find PRs you're interested in)
   - personal: true if you'd like to see the "My Pull Requests" sub-menu, false otherwise
   - byLabel:
     - title: string that will appear on the systray to hold all the PRs related to that label
@@ -46,6 +55,13 @@ You may use any name for it, just make sure to use the same name in the config f
     - repo: repo you want to see the PRs of
     - owner: repo owner
 - darkMode: changes the icon color
+
+### Environment variables
+
+| Variable | Required | Default | Purpose | Used in |
+| --- | --- | --- | --- | --- |
+| _token variable_, named by `github.token` in `config.json` (`GITHUB_ACCESS_TOKEN` in the default config) | Yes | none | Your GitHub personal access token. Appletini exits at startup if it isn't set. | [config/migration/v2/token.go](config/migration/v2/token.go) |
+| `APPLETINI_LOG_LEVEL` | No | `info` | Log level: `debug`, `info`, `warn`, `error` or `fatal`. Unrecognised values fall back to `info`. | [globals.go](globals.go) |
 
 ## Development
 
@@ -70,3 +86,15 @@ We use [Taskfile](https://taskfile.dev). You may run the following command to bu
 ```
 task run
 ```
+
+### Testing
+
+```
+task test
+```
+
+Tests run with Fyne's `ci` build tag, so they don't need a display or the
+OpenGL/X11 development headers. `task test:race` runs them with the race
+detector, and `task lint` runs golangci-lint.
+
+See [Overall_Architect.md](Overall_Architect.md) for how the packages fit together.

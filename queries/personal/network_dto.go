@@ -5,29 +5,30 @@ import "appletini/gitter"
 type Response struct {
 	Viewer struct {
 		PullRequests struct {
-			Nodes []edge `json:"edges"`
+			Edges []edge `json:"edges"`
 		} `json:"pullRequests"`
 	} `json:"viewer"`
 }
+
 type edge struct {
-	Node pullRequestPersonal `yaml:"node"`
+	Node pullRequestPersonal `json:"node"`
+}
+
+type totalCount struct {
+	TotalCount int `json:"totalCount"`
 }
 
 type pullRequestPersonal struct {
-	Id          string `yaml:"id"`
-	Title       string `yaml:"title"`
-	BaseRefName string `yaml:"baseRefName"`
-	HeadRefName string `yaml:"headRefName"`
-	Number      int    `yaml:"number"`
-	Permalink   string `yaml:"permalink"`
-	ReviewCount struct {
-		TotalCount int `yaml:"totalCount"`
-	} `yaml:"reviewCount"`
-	ReviewRequests struct {
-		TotalCount int `yaml:"totalCount"`
-	} `yaml:"reviewRequests"`
-	ReviewDecision string `yaml:"reviewDecision"`
-	Mergeable      string `yaml:"mergeable"`
+	Id             string     `json:"id"`
+	Title          string     `json:"title"`
+	BaseRefName    string     `json:"baseRefName"`
+	HeadRefName    string     `json:"headRefName"`
+	Number         int        `json:"number"`
+	Permalink      string     `json:"permalink"`
+	Reviews        totalCount `json:"reviews"`
+	ReviewRequests totalCount `json:"reviewRequests"`
+	ReviewDecision string     `json:"reviewDecision"`
+	Mergeable      string     `json:"mergeable"`
 }
 
 func (pr pullRequestPersonal) transform() gitter.PullRequest {
@@ -38,7 +39,7 @@ func (pr pullRequestPersonal) transform() gitter.PullRequest {
 		HeadRefName:    pr.HeadRefName,
 		Number:         pr.Number,
 		Permalink:      pr.Permalink,
-		ReviewCount:    pr.ReviewCount.TotalCount,
+		ReviewCount:    pr.Reviews.TotalCount,
 		ReviewRequests: pr.ReviewRequests.TotalCount,
 		ReviewDecision: pr.ReviewDecision,
 		Mergeable:      pr.Mergeable,
@@ -47,7 +48,7 @@ func (pr pullRequestPersonal) transform() gitter.PullRequest {
 
 func (pr Response) Extract() []gitter.PullRequest {
 	prs := []gitter.PullRequest{}
-	for _, val := range pr.Viewer.PullRequests.Nodes {
+	for _, val := range pr.Viewer.PullRequests.Edges {
 		prs = append(prs, val.Node.transform())
 	}
 

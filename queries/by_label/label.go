@@ -1,10 +1,14 @@
 package by_label
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"appletini/gitter"
 )
+
+var ErrNilClient = errors.New("graphql client must not be nil")
 
 type Result map[string]LabelMap
 
@@ -25,21 +29,21 @@ type Edge struct {
 }
 
 type PullNode struct {
-	Id             string                 `json:"id"`
-	Title          string                 `json:"title"`
-	Url            string                 `json:"url"`
-	BaseRefName    string                 `json:"baseRefName"`
-	HeadRefName    string                 `json:"headRefName"`
-	ReviewRequests ReviewRequest          `json:"reviewRequests"`
-	ReviewDecision string                 `json:"reviewDecision"`
-	Permalink      string                 `json:"permalink"`
-	Mergeable      string                 `json:"mergeable"`
-	Number         int                    `json:"number"`
-	State          string                 `json:"state"`
-	Review         map[string]interface{} `json:"review"`
+	Id             string     `json:"id"`
+	Title          string     `json:"title"`
+	Url            string     `json:"url"`
+	BaseRefName    string     `json:"baseRefName"`
+	HeadRefName    string     `json:"headRefName"`
+	ReviewRequests TotalCount `json:"reviewRequests"`
+	ReviewDecision string     `json:"reviewDecision"`
+	Permalink      string     `json:"permalink"`
+	Mergeable      string     `json:"mergeable"`
+	Number         int        `json:"number"`
+	State          string     `json:"state"`
+	Reviews        TotalCount `json:"reviews"`
 }
 
-type ReviewRequest struct {
+type TotalCount struct {
 	TotalCount int `json:"totalCount"`
 }
 
@@ -55,7 +59,7 @@ func (result LabelMap) Extract() []gitter.PullRequest {
 			HeadRefName:    node.HeadRefName,
 			Number:         node.Number,
 			Permalink:      node.Permalink,
-			ReviewCount:    0, // TODO
+			ReviewCount:    node.Reviews.TotalCount,
 			ReviewRequests: node.ReviewRequests.TotalCount,
 			ReviewDecision: node.ReviewDecision,
 			Id:             node.Id,
@@ -67,16 +71,20 @@ func (result LabelMap) Extract() []gitter.PullRequest {
 	return all
 }
 
-func (query Query) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
+func (query Query) GetAll(ctx context.Context, client gitter.Querier) (map[string][]gitter.PullRequest, error) {
 	prs := make(map[string][]gitter.PullRequest)
 
 	if !query.shouldBeExecuted {
 		return prs, nil
 	}
 
+	if client == nil {
+		return map[string][]gitter.PullRequest{}, ErrNilClient
+	}
+
 	res := Result{}
 
-	err := gitter.AuthorizedGraphQLQuery[Result](client, query.generatedQuery, &res)
+	err := client.Query(ctx, query.generatedQuery, &res)
 	if err != nil {
 		return map[string][]gitter.PullRequest{}, fmt.Errorf("requesting label PRs: %w", err)
 	}

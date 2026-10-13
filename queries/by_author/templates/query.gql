@@ -1,7 +1,7 @@
 query PRs {
   {{ range $_, $tracker := .Trackers }}
     {{ range $author_id, $author := $tracker.Authors }}
-      {{ $tracker.Id }}_{{ $author_id }}: search(query: "repo:{{ $tracker.Owner }}/{{ $tracker.Repo }} is:open type:pr author:{{ $author }}", type: ISSUE, first: {{$.PrAmount}}) {
+      {{ $tracker.Id }}_{{ $author_id }}: search(query: {{ quote (printf "repo:%s/%s is:open type:pr author:%s" $tracker.Owner $tracker.Repo $author) }}, type: ISSUE, first: {{$.PrAmount}}) {
         nodes {
           __typename
           ... on PullRequest {
@@ -33,6 +33,7 @@ fragment getPullRequest on PullRequest {
 
 fragment getReviewer on PullRequest {
   reviews(first: {{ .ReviewAmount }}) {
+    totalCount
     edges {
       node {
         state

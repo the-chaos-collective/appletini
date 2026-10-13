@@ -1,6 +1,9 @@
 package ui
 
 import (
+	"errors"
+	"fmt"
+
 	"appletini/logging"
 
 	"fyne.io/fyne/v2"
@@ -8,92 +11,180 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 )
 
-func (s *Systray) createApp() {
-	// create app
-	app := app.NewWithID("appletini")
+var (
+	ErrNotDesktop = errors.New("fyne app is not a desktop app (no system tray support)")
+	ErrNotSetup   = errors.New("systray not set up yet")
+	ErrNilItem    = errors.New("menu item must not be nil")
+	ErrNilSubmenu = errors.New("submenu must not be nil")
+	ErrBadItem    = errors.New("unsupported menu item")
+)
 
-	s.fyneApp = &app
+func (s *Systray) createApp() error {
+	fyneApp := app.NewWithID("appletini")
 
-	var ok bool
-
-	// get desktop app
-	desk, ok := (*s.fyneApp).(desktop.App)
+	desk, ok := fyneApp.(desktop.App)
 	if !ok {
-		s.Logger.Fatal("could not create desktop app")
+		return ErrNotDesktop
 	}
 
-	// create main menu
-	s.MainMenu.fyneMenu = fyne.NewMenu(s.title)
+	s.fyneApp = fyneApp
 
-	// set main menu onto the desktop app created
+	// create main menu and set it onto the desktop app
+	s.MainMenu.fyneMenu = fyne.NewMenu(s.title)
 	desk.SetSystemTrayMenu(s.MainMenu.fyneMenu)
 
 	// set default icon on main menu
 	desk.SetSystemTrayIcon(s.icon)
-	(*s.fyneApp).Lifecycle().SetOnStarted(func() {
+	fyneApp.Lifecycle().SetOnStarted(func() {
+		s.mu.Lock()
+		defer s.mu.Unlock()
+
 		desk.SetSystemTrayIcon(s.icon)
 	})
+
+	return nil
 }
 
-func (s *Systray) SetIcon(icon fyne.Resource) {
-	s.icon = icon
+func (s *Systray) SetIcon(icon fyne.Resource) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-	desk, ok := (*s.fyneApp).(desktop.App)
-	if !ok {
-		s.Logger.Fatal("could not get desktop app")
-	}
-
-	desk.SetSystemTrayIcon(s.icon)
-}
-
-func (s *Systray) Setup() {
-	s.createApp()
-}
-
-func (s *Systray) Sync() {
-	s.MainMenu.sync(s.Logger)
-}
-
-func (s Systray) Run() {
 	if s.fyneApp == nil {
-		s.Logger.Fatal("systray not setup yet")
+		return ErrNotSetup
 	}
 
-	(*s.fyneApp).Run()
+	desk, ok := s.fyneApp.(desktop.App)
+	if !ok {
+		return ErrNotDesktop
+	}
+
+	s.icon = icon
+	desk.SetSystemTrayIcon(s.icon)
+
+	return nil
 }
 
-func (menu *SystrayMenu) sync(logger logging.Logger) {
-	menu.fyneMenu.Items = []*fyne.MenuItem{}
+func (s *Systray) Setup() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-	for _, item := range menu.Items {
-		switch (item).Type() {
+	return s.createApp()
+}
+
+// SetMenu replaces the main menu's items and redraws it.
+func (s *Systray) SetMenu(items []Itemable) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.MainMenu.fyneMenu == nil {
+		return ErrNotSetup
+	}
+
+	s.MainMenu.Items = items
+
+	return s.MainMenu.sync(s.Logger)
+}
+
+// Run blocks until the app quits.
+func (s *Systray) Run() error {
+	s.mu.Lock()
+	fyneApp := s.fyneApp
+	s.mu.Unlock()
+
+	if fyneApp == nil {
+		return ErrNotSetup
+	}
+
+	fyneApp.Run()
+
+	return nil
+}
+
+// Quit stops the app, which makes Run return. It is safe to call before
+// Setup and more than once; only the first call after Setup has an effect.
+func (s *Systray) Quit() {
+	s.mu.Lock()
+	fyneApp := s.fyneApp
+	s.mu.Unlock()
+
+	if fyneApp == nil {
+		return
+	}
+
+	s.quitOnce.Do(fyneApp.Quit)
+}
+
+// buildItems converts menu items into fyne menu items, recursing into submenus.
+func (menu *SystrayMenu) buildItems(logger logging.Logger) ([]*fyne.MenuItem, error) {
+	items := make([]*fyne.MenuItem, 0, len(menu.Items))
+
+	for i, item := range menu.Items {
+		if item == nil {
+			return nil, fmt.Errorf("item %d: %w", i, ErrNilItem)
+		}
+
+		switch item.Type() {
 		case Button:
-			item := (item).(SystrayButton)
+			button, ok := item.(SystrayButton)
+			if !ok {
+				return nil, fmt.Errorf("item %d: %w: %T claims to be a button", i, ErrBadItem, item)
+			}
 
-			menuItem := fyne.NewMenuItem(item.Title, func() {
-				err := item.Action()
-				if err != nil {
-					logger.Fatal(err)
+			items = append(items, fyne.NewMenuItem(button.Title, func() {
+				if button.Action == nil {
+					return
 				}
-			})
-			menu.fyneMenu.Items = append(menu.fyneMenu.Items, menuItem)
+
+				// A failed action (e.g. no browser) must not take the app down.
+				err := button.Action()
+				if err != nil {
+					logger.Error("menu action failed", "item", button.Title, "err", err)
+				}
+			}))
 
 		case Separator:
-			menuItem := fyne.NewMenuItemSeparator()
-			menu.fyneMenu.Items = append(menu.fyneMenu.Items, menuItem)
+			items = append(items, fyne.NewMenuItemSeparator())
 
 		case Submenu:
-			item := (item).(SystraySubmenu)
+			sub, ok := item.(SystraySubmenu)
+			if !ok {
+				return nil, fmt.Errorf("item %d: %w: %T claims to be a submenu", i, ErrBadItem, item)
+			}
 
-			menuItem := fyne.NewMenuItem(item.Title, func() {})
-			menuItem.ChildMenu = fyne.NewMenu(item.Title)
-			menu.fyneMenu.Items = append(menu.fyneMenu.Items, menuItem)
+			if sub.Submenu == nil {
+				return nil, fmt.Errorf("item %d (%s): %w", i, sub.Title, ErrNilSubmenu)
+			}
 
-			item.Submenu.fyneMenu = menuItem.ChildMenu
-			item.Submenu.sync(logger)
+			childItems, err := sub.Submenu.buildItems(logger)
+			if err != nil {
+				return nil, fmt.Errorf("submenu %s: %w", sub.Title, err)
+			}
 
+			menuItem := fyne.NewMenuItem(sub.Title, func() {})
+			menuItem.ChildMenu = fyne.NewMenu(sub.Title, childItems...)
+			sub.Submenu.fyneMenu = menuItem.ChildMenu
+			items = append(items, menuItem)
+
+		default:
+			return nil, fmt.Errorf("item %d: %w: type %d", i, ErrBadItem, item.Type())
 		}
 	}
 
+	return items, nil
+}
+
+func (menu *SystrayMenu) sync(logger logging.Logger) error {
+	if menu.fyneMenu == nil {
+		return ErrNotSetup
+	}
+
+	items, err := menu.buildItems(logger)
+	if err != nil {
+		return err
+	}
+
+	menu.fyneMenu.Items = items
 	menu.fyneMenu.Refresh()
+
+	return nil
 }

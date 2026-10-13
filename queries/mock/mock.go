@@ -1,10 +1,20 @@
 package mock
 
 import (
+	"context"
+	"fmt"
+
 	"appletini/gitter"
 )
 
-func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
+// GetAll returns fixed example data. The client is ignored, but cancellation
+// is still honoured so the mock behaves like a real query.
+func (MockQuery) GetAll(ctx context.Context, _ gitter.Querier) (map[string][]gitter.PullRequest, error) {
+	err := ctx.Err()
+	if err != nil {
+		return map[string][]gitter.PullRequest{}, fmt.Errorf("mock query: %w", err)
+	}
+
 	prMap := map[string][]gitter.PullRequest{}
 
 	//exhaustruct:ignore
@@ -22,7 +32,7 @@ func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRe
 			Title:          "Example PR 2",
 			HeadRefName:    "from-branch",
 			BaseRefName:    "to-branch",
-			Mergeable:      "UNKWNOWN",
+			Mergeable:      "UNKNOWN",
 			ReviewDecision: "APPROVED",
 		},
 		{
@@ -46,7 +56,7 @@ func (MockQuery) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRe
 			Title:          "Example PR 5",
 			HeadRefName:    "from-branch",
 			BaseRefName:    "to-branch",
-			Mergeable:      "UNKWNOWN",
+			Mergeable:      "UNKNOWN",
 			ReviewDecision: "CHANGES_REQUESTED",
 		},
 		{

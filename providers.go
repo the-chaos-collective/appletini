@@ -71,11 +71,8 @@ func setupProviders(deps *dig.Container) error {
 	}
 
 	// * GraphQL Client
-	err = deps.Provide(func(conf config.Config) *gitter.GraphQLClient {
-		return &gitter.GraphQLClient{
-			Url:   conf.Github.GraphQL,
-			Token: conf.Computed.GithubToken,
-		}
+	err = deps.Provide(func(conf config.Config) (gitter.Querier, error) {
+		return gitter.NewGraphQLClient(conf.Github.GraphQL, conf.Computed.GithubToken, gitter.DefaultTimeout)
 	})
 	if err != nil {
 		return err
@@ -97,39 +94,20 @@ func setupProviders(deps *dig.Container) error {
 		return err
 	}
 
-	// * Green Icon Channel
-	err = deps.Provide(func() ShowGreenIconChan {
-		return make(ShowGreenIconChan)
-	})
-	if err != nil {
-		return err
-	}
-
-	// * Red Icon Channel
-	err = deps.Provide(func() ShowRedIconChan {
-		return make(ShowRedIconChan)
-	})
-	if err != nil {
-		return err
-	}
-
 	// * UI
 	err = deps.Provide(func(
 		conf config.Config,
 		logger logging.Logger,
 		prs PRChan,
 		hasErr HasErrChan,
-		showGreenIcon ShowGreenIconChan,
-		showRedIcon ShowRedIconChan,
-	) pages.IndexPage {
-		return pages.IndexPage{
-			PullRequests:  prs,
-			HasErr:        hasErr,
-			ShowGreenIcon: showGreenIcon,
-			ShowRedIcon:   showRedIcon,
-			Darkmode:      conf.Darkmode,
-			Trackers:      conf.Tracking,
-			Logger:        logger,
+	) *pages.IndexPage {
+		//exhaustruct:ignore
+		return &pages.IndexPage{
+			PullRequests: prs,
+			HasErr:       hasErr,
+			Darkmode:     conf.Darkmode,
+			Trackers:     conf.Tracking,
+			Logger:       logger,
 		}
 	})
 	if err != nil {

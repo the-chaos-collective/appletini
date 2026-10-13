@@ -1,6 +1,8 @@
 package personal
 
 import (
+	"context"
+	"errors"
 	"fmt"
 
 	"appletini/gitter"
@@ -56,16 +58,25 @@ var ViewerQuery = `query fetchPRs {
 			}
 			}`
 
-func (Query) GetAll(client gitter.GraphQLClient) (map[string][]gitter.PullRequest, error) {
+// Key is the result key used for the viewer's own pull requests.
+const Key = "personal"
+
+var ErrNilClient = errors.New("graphql client must not be nil")
+
+func (Query) GetAll(ctx context.Context, client gitter.Querier) (map[string][]gitter.PullRequest, error) {
+	if client == nil {
+		return map[string][]gitter.PullRequest{}, ErrNilClient
+	}
+
 	var res Response
 
-	err := gitter.AuthorizedGraphQLQuery[Response](client, ViewerQuery, &res)
+	err := client.Query(ctx, ViewerQuery, &res)
 	if err != nil {
 		return map[string][]gitter.PullRequest{}, fmt.Errorf("requesting personal PRs: %w", err)
 	}
 
 	prMap := map[string][]gitter.PullRequest{}
-	prMap["personal"] = res.Extract()
+	prMap[Key] = res.Extract()
 
 	return prMap, nil
 }
