@@ -28,6 +28,9 @@ fragment getPullRequest on PullRequest {
   permalink
   mergeable
   state
+  viewerLatestReview {
+    state
+  }
   commits(last: 1) {
     nodes {
       commit {

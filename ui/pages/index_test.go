@@ -318,12 +318,14 @@ func TestBuildTreeApproveOption(t *testing.T) {
 }
 
 type fakeApprover struct {
-	err    error
-	gotIDs []string
+	err         error
+	gotIDs      []string
+	gotComments []string
 }
 
-func (f *fakeApprover) Approve(_ context.Context, prID, _ string) (reviews.Review, error) {
+func (f *fakeApprover) Approve(_ context.Context, prID, comment string) (reviews.Review, error) {
 	f.gotIDs = append(f.gotIDs, prID)
+	f.gotComments = append(f.gotComments, comment)
 	if f.err != nil {
 		return reviews.Review{}, f.err
 	}
@@ -397,6 +399,10 @@ func TestApprovePR(t *testing.T) {
 			if !slices.Equal(tc.approver.gotIDs, []string{"PR_42"}) {
 				t.Fatalf("approved ids %v", tc.approver.gotIDs)
 			}
+
+			if !slices.Equal(tc.approver.gotComments, []string{"LGTM!"}) {
+				t.Fatalf("approval comments %v, expected [LGTM!]", tc.approver.gotComments)
+			}
 		})
 	}
 }
@@ -406,5 +412,38 @@ func TestApprovePRWithoutApprover(t *testing.T) {
 	err := approvePR(context.Background(), nil, func(string, string) error { return nil }, gitter.PullRequest{})
 	if err == nil {
 		t.Fatal("expected an error without an approver")
+	}
+}
+
+func TestBuildTreeHidesApproveOnceYouApproved(t *testing.T) {
+	approve := func(gitter.PullRequest) func() error { return func() error { return nil } }
+
+	testCases := []struct {
+		name           string
+		reviewDecision string
+		viewerReview   string
+		expected       []string
+	}{
+		{name: "not reviewed yet", viewerReview: "", expected: []string{"Open in browser", "Approve"}},
+		{name: "you already approved", reviewDecision: "APPROVED", viewerReview: "APPROVED", expected: []string{"Open in browser"}},
+		{name: "approved by others only", reviewDecision: "APPROVED", viewerReview: "", expected: []string{"Open in browser", "Approve"}},
+		{name: "you requested changes", reviewDecision: "CHANGES_REQUESTED", viewerReview: "CHANGES_REQUESTED", expected: []string{"Open in browser", "Approve"}},
+		{name: "your approval was dismissed", viewerReview: "DISMISSED", expected: []string{"Open in browser", "Approve"}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			//exhaustruct:ignore
+			pr := gitter.PullRequest{Id: "PR_1", Number: 1, ReviewDecision: tc.reviewDecision, ViewerReview: tc.viewerReview}
+
+			items, _, err := buildTree(map[string][]gitter.PullRequest{"label_0": {pr}}, trackers(), treeActions{quit: func() error { return nil }, approve: approve})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if got := prOptions(t, items, "Bugs")[0]; !slices.Equal(got, tc.expected) {
+				t.Fatalf("options %v, expected %v", got, tc.expected)
+			}
+		})
 	}
 }

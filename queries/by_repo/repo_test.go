@@ -71,7 +71,7 @@ const repoResponse = `{
   "repo_0": {"pullRequests": {"edges": [
     {"node": {"id": "PR_1", "title": "One", "number": 1, "reviewDecision": "", "mergeable": "UNKNOWN",
               "reviewRequests": {"totalCount": 0}, "reviews": {"totalCount": 0},
-              "commits": {"nodes": [{"commit": {"statusCheckRollup": null}}]}}},
+              "commits": {"nodes": [{"commit": {"statusCheckRollup": null}}]}, "viewerLatestReview": null}},
     {"node": {"id": "PR_2", "title": "Two", "number": 2, "reviewDecision": "CHANGES_REQUESTED", "mergeable": "CONFLICTING",
               "baseRefName": "main", "headRefName": "feat", "permalink": "https://x/2",
               "reviewRequests": {"totalCount": 1}, "reviews": {"totalCount": 4},
@@ -153,6 +153,7 @@ func TestGeneratedQuery(t *testing.T) {
 		"first: 10",
 		"totalCount",
 		"statusCheckRollup",
+		"viewerLatestReview",
 	} {
 		if !strings.Contains(fake.Queries()[0], want) {
 			t.Fatalf("query does not contain %q:\n%s", want, fake.Queries()[0])

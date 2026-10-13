@@ -36,6 +36,7 @@ type PullRequest struct {
 	State          string            `json:"state"`
 	Reviews        TotalCount        `json:"reviews"`
 	Commits        gitter.LastCommit `json:"commits"`
+	ViewerReview   *gitter.Review    `json:"viewerLatestReview"`
 }
 
 type TotalCount struct {
@@ -58,6 +59,7 @@ func (result NodeMap) Extract() []gitter.PullRequest {
 			Id:             node.Id,
 			Mergeable:      node.Mergeable,
 			ChecksState:    node.Commits.ChecksState(),
+			ViewerReview:   node.ViewerReview.StateOrEmpty(),
 		}
 		all = append(all, pr)
 	}

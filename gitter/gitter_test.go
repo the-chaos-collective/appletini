@@ -112,3 +112,49 @@ func TestLastCommitChecksState(t *testing.T) {
 		})
 	}
 }
+
+func TestApprovedByViewer(t *testing.T) {
+	testCases := []struct {
+		viewerReview string
+		expected     bool
+	}{
+		{viewerReview: "APPROVED", expected: true},
+		{viewerReview: "", expected: false},
+		{viewerReview: "COMMENTED", expected: false},
+		{viewerReview: "CHANGES_REQUESTED", expected: false},
+		{viewerReview: "DISMISSED", expected: false},
+		{viewerReview: "PENDING", expected: false},
+	}
+
+	for _, tc := range testCases {
+		t.Run("review "+tc.viewerReview, func(t *testing.T) {
+			//exhaustruct:ignore
+			pr := gitter.PullRequest{ReviewDecision: "APPROVED", ViewerReview: tc.viewerReview}
+
+			if got := pr.ApprovedByViewer(); got != tc.expected {
+				t.Fatalf("got %v, expected %v", got, tc.expected)
+			}
+		})
+	}
+}
+
+func TestReviewStateOrEmpty(t *testing.T) {
+	var none *gitter.Review
+
+	testCases := []struct {
+		name     string
+		review   *gitter.Review
+		expected string
+	}{
+		{name: "no review", review: none, expected: ""},
+		{name: "approved", review: &gitter.Review{State: "APPROVED"}, expected: "APPROVED"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := tc.review.StateOrEmpty(); got != tc.expected {
+				t.Fatalf("got %q, expected %q", got, tc.expected)
+			}
+		})
+	}
+}

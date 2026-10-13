@@ -92,6 +92,7 @@ func TestGeneratedQuery(t *testing.T) {
 		`author_0_0: search(query: "repo:the-chaos-collective/appletini is:open type:pr author:darvoid", type: ISSUE, first: 10)`,
 		`author_0_1: search(query: "repo:the-chaos-collective/appletini is:open type:pr author:tobyselway", type: ISSUE, first: 10)`,
 		"statusCheckRollup",
+		"viewerLatestReview",
 	} {
 		if !strings.Contains(sent, want) {
 			t.Fatalf("query does not contain %q:\n%s", want, sent)
@@ -101,7 +102,8 @@ func TestGeneratedQuery(t *testing.T) {
 
 func node(id string, number int) string {
 	return fmt.Sprintf(`{"id": %q, "title": "T", "number": %d, "reviews": {"totalCount": 1},
-		"commits": {"nodes": [{"commit": {"statusCheckRollup": {"state": "SUCCESS"}}}]}}`, id, number)
+		"commits": {"nodes": [{"commit": {"statusCheckRollup": {"state": "SUCCESS"}}}]},
+		"viewerLatestReview": {"state": "COMMENTED"}}`, id, number)
 }
 
 func TestGetAll(t *testing.T) {
@@ -118,9 +120,9 @@ func TestGetAll(t *testing.T) {
 	//exhaustruct:ignore
 	expected := map[string][]gitter.PullRequest{
 		"author_0": {
-			{Id: "A1", Title: "T", Number: 1, ReviewCount: 1, ChecksState: "SUCCESS"},
-			{Id: "A2", Title: "T", Number: 2, ReviewCount: 1, ChecksState: "SUCCESS"},
-			{Id: "B1", Title: "T", Number: 3, ReviewCount: 1, ChecksState: "SUCCESS"},
+			{Id: "A1", Title: "T", Number: 1, ReviewCount: 1, ChecksState: "SUCCESS", ViewerReview: "COMMENTED"},
+			{Id: "A2", Title: "T", Number: 2, ReviewCount: 1, ChecksState: "SUCCESS", ViewerReview: "COMMENTED"},
+			{Id: "B1", Title: "T", Number: 3, ReviewCount: 1, ChecksState: "SUCCESS", ViewerReview: "COMMENTED"},
 		},
 		"author_1": nil,
 	}

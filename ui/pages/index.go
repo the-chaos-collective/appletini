@@ -183,9 +183,10 @@ func buildTree(
 		for _, pr := range prs[rawKeys[key]] {
 			status := pr.PRInfo().Classify()
 
-			// GitHub doesn't let you approve your own PRs, so no option there.
+			// No Approve on your own PRs (GitHub doesn't allow it) or on PRs
+			// you've already approved yourself.
 			var approve func() error
-			if key.Kind != trackerkey.Personal && acts.approve != nil {
+			if key.Kind != trackerkey.Personal && !pr.ApprovedByViewer() && acts.approve != nil {
 				approve = acts.approve(pr)
 			}
 
@@ -247,6 +248,9 @@ func (page *IndexPage) actions() treeActions {
 	return acts
 }
 
+// approvalComment is posted with every approval made from the tray.
+const approvalComment = "LGTM!"
+
 // approvePR approves pr and reports the outcome as a desktop notification.
 func approvePR(
 	ctx context.Context,
@@ -258,7 +262,7 @@ func approvePR(
 		return errors.New("no approver configured")
 	}
 
-	_, err := approver.Approve(ctx, pr.Id, "")
+	_, err := approver.Approve(ctx, pr.Id, approvalComment)
 	if err != nil {
 		notifyErr := notify(fmt.Sprintf("Couldn't approve #%d", pr.Number), err.Error())
 

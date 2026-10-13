@@ -22,8 +22,33 @@ type PullRequest struct {
 
 	// ChecksState is GitHub's combined CI state on the latest commit
 	// (SUCCESS, FAILURE, ERROR, PENDING, EXPECTED), or "" when it has no checks.
-	ChecksState string         `yaml:"checksState"`
-	_           map[string]any `yaml:",inline"`
+	ChecksState string `yaml:"checksState"`
+
+	// ViewerReview is the state of your own latest review on the PR
+	// (APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED, PENDING), or ""
+	// when you haven't reviewed it.
+	ViewerReview string         `yaml:"viewerReview"`
+	_            map[string]any `yaml:",inline"`
+}
+
+// Review is the response shape of `viewerLatestReview { state }`.
+type Review struct {
+	State string `json:"state"`
+}
+
+// StateOrEmpty returns the review's state, or "" when there is no review.
+func (r *Review) StateOrEmpty() string {
+	if r == nil {
+		return ""
+	}
+
+	return r.State
+}
+
+// ApprovedByViewer reports whether your own latest review approved the PR.
+// Other people's approvals don't count.
+func (pr PullRequest) ApprovedByViewer() bool {
+	return pr.ViewerReview == "APPROVED"
 }
 
 // LastCommit is the response shape of
