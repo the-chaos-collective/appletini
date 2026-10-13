@@ -2,6 +2,7 @@ package gitter_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -182,5 +183,43 @@ func TestGraphQLClientQuery(t *testing.T) {
 				t.Fatalf("got login %q, expected %q", res.Viewer.Login, tc.expectedLogin)
 			}
 		})
+	}
+}
+
+func TestGraphQLClientMutateSendsVariables(t *testing.T) {
+	var got struct {
+		Query     string         `json:"query"`
+		Variables map[string]any `json:"variables"`
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := json.NewDecoder(r.Body).Decode(&got)
+		if err != nil {
+			t.Errorf("decoding request: %v", err)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = io.WriteString(w, `{"data":{"ok":true}}`)
+	}))
+	defer server.Close()
+
+	client, err := gitter.NewGraphQLClient(server.URL, "token", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var res struct {
+		OK bool `json:"ok"`
+	}
+
+	vars := map[string]any{"id": "PR_7", "body": `say "hi"`}
+
+	err = client.Mutate(context.Background(), "mutation M($id: ID!) { ok }", vars, &res)
+	if err != nil {
+		t.Fatalf("Mutate: %v", err)
+	}
+
+	if !res.OK || got.Query != "mutation M($id: ID!) { ok }" || got.Variables["id"] != "PR_7" || got.Variables["body"] != `say "hi"` {
+		t.Fatalf("server got %+v, response %+v", got, res)
 	}
 }

@@ -58,3 +58,20 @@ func TestFake(t *testing.T) {
 		})
 	}
 }
+
+func TestFakeMutateRecordsVars(t *testing.T) {
+	fake := &gittertest.Fake{Data: `{"name":"x"}`}
+
+	var got struct {
+		Name string `json:"name"`
+	}
+
+	err := fake.Mutate(context.Background(), "mutation m", map[string]any{"id": "PR_1"}, &got)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if got.Name != "x" || fake.Queries()[0] != "mutation m" || fake.Vars()[0]["id"] != "PR_1" {
+		t.Fatalf("got %+v, queries %v, vars %v", got, fake.Queries(), fake.Vars())
+	}
+}

@@ -8,6 +8,7 @@ import (
 	"appletini/config/migration"
 	"appletini/gitter"
 	"appletini/logging"
+	"appletini/reviews"
 	"appletini/ui/pages"
 
 	"github.com/charmbracelet/log"
@@ -71,8 +72,27 @@ func setupProviders(deps *dig.Container) error {
 	}
 
 	// * GraphQL Client
-	err = deps.Provide(func(conf config.Config) (gitter.Querier, error) {
+	err = deps.Provide(func(conf config.Config) (*gitter.GraphQLClient, error) {
 		return gitter.NewGraphQLClient(conf.Github.GraphQL, conf.Computed.GithubToken, gitter.DefaultTimeout)
+	})
+	if err != nil {
+		return err
+	}
+
+	// The same client reads (queries) and writes (mutations).
+	err = deps.Provide(func(client *gitter.GraphQLClient) gitter.Querier { return client })
+	if err != nil {
+		return err
+	}
+
+	err = deps.Provide(func(client *gitter.GraphQLClient) gitter.Mutator { return client })
+	if err != nil {
+		return err
+	}
+
+	// * Reviews (Approve option)
+	err = deps.Provide(func(client gitter.Mutator) reviews.Approver {
+		return reviews.Approver{Client: client}
 	})
 	if err != nil {
 		return err
@@ -100,11 +120,13 @@ func setupProviders(deps *dig.Container) error {
 		logger logging.Logger,
 		prs PRChan,
 		hasErr HasErrChan,
+		approver reviews.Approver,
 	) *pages.IndexPage {
 		//exhaustruct:ignore
 		return &pages.IndexPage{
 			PullRequests: prs,
 			HasErr:       hasErr,
+			Approver:     approver,
 			Darkmode:     conf.Darkmode,
 			Trackers:     conf.Tracking,
 			Logger:       logger,

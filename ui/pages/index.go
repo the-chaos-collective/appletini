@@ -9,6 +9,7 @@ import (
 	"appletini/config"
 	"appletini/gitter"
 	"appletini/logging"
+	"appletini/reviews"
 	"appletini/trackerkey"
 	"appletini/ui"
 	"appletini/ui/components"
@@ -23,13 +24,28 @@ var (
 	ErrMissingIcon       = errors.New("no icon for state")
 )
 
+// Approver approves pull requests (reviews.Approver in production).
+type Approver interface {
+	Approve(ctx context.Context, prID, comment string) (reviews.Review, error)
+}
+
 type IndexPage struct {
 	systray      *ui.Systray
+	ctx          context.Context
 	Darkmode     bool
 	PullRequests <-chan map[string][]gitter.PullRequest
 	HasErr       <-chan bool
 	Trackers     config.Tracking
 	Logger       logging.Logger
+	// Approver enables the Approve option on other people's PRs; nil hides it.
+	Approver Approver
+}
+
+// treeActions are the callbacks the menu items run.
+type treeActions struct {
+	quit func() error
+	// approve returns the Approve action for a PR, or nil to hide the option.
+	approve func(pr gitter.PullRequest) func() error
 }
 
 // iconState is what the tray icon reflects. green/red come from the user's
@@ -146,7 +162,7 @@ func quitItems(quit func() error) []ui.Itemable {
 func buildTree(
 	prs map[string][]gitter.PullRequest,
 	trackers config.Tracking,
-	quit func() error,
+	acts treeActions,
 ) ([]ui.Itemable, iconState, error) {
 	//exhaustruct:ignore
 	state := iconState{}
@@ -167,6 +183,12 @@ func buildTree(
 		for _, pr := range prs[rawKeys[key]] {
 			status := pr.PRInfo().Classify()
 
+			// GitHub doesn't let you approve your own PRs, so no option there.
+			var approve func() error
+			if key.Kind != trackerkey.Personal && acts.approve != nil {
+				approve = acts.approve(pr)
+			}
+
 			prList = append(prList, components.PullRequest{
 				Title:       pr.Title,
 				Number:      pr.Number,
@@ -174,6 +196,7 @@ func buildTree(
 				BaseRefName: pr.BaseRefName,
 				Permalink:   pr.Permalink,
 				Status:      status,
+				Approve:     approve,
 			}.Build())
 
 			if key.Kind == trackerkey.Personal {
@@ -190,7 +213,7 @@ func buildTree(
 		})
 	}
 
-	result = append(result, quitItems(quit)...)
+	result = append(result, quitItems(acts.quit)...)
 
 	return result, state, errors.Join(errs...)
 }
@@ -199,6 +222,50 @@ func (page *IndexPage) quit() error {
 	page.systray.Quit()
 
 	return nil
+}
+
+func (page *IndexPage) actions() treeActions {
+	//exhaustruct:ignore
+	acts := treeActions{quit: page.quit}
+
+	if page.Approver != nil {
+		acts.approve = func(pr gitter.PullRequest) func() error {
+			return func() error {
+				// Menu actions run on the UI thread: don't block it on the network.
+				go func() {
+					err := approvePR(page.ctx, page.Approver, page.systray.Notify, pr)
+					if err != nil {
+						page.Logger.Error("approving PR", "number", pr.Number, "err", err)
+					}
+				}()
+
+				return nil
+			}
+		}
+	}
+
+	return acts
+}
+
+// approvePR approves pr and reports the outcome as a desktop notification.
+func approvePR(
+	ctx context.Context,
+	approver Approver,
+	notify func(title, content string) error,
+	pr gitter.PullRequest,
+) error {
+	if approver == nil {
+		return errors.New("no approver configured")
+	}
+
+	_, err := approver.Approve(ctx, pr.Id, "")
+	if err != nil {
+		notifyErr := notify(fmt.Sprintf("Couldn't approve #%d", pr.Number), err.Error())
+
+		return errors.Join(err, notifyErr)
+	}
+
+	return notify(fmt.Sprintf("Approved #%d", pr.Number), pr.Title)
 }
 
 func (page *IndexPage) applyIcon(state iconState) {
@@ -226,7 +293,7 @@ func (page *IndexPage) loop(ctx context.Context) {
 			return
 
 		case prs := <-page.PullRequests:
-			items, prState, err := buildTree(prs, page.Trackers, page.quit)
+			items, prState, err := buildTree(prs, page.Trackers, page.actions())
 			if err != nil {
 				page.Logger.Error("building menu", "err", err)
 			}
@@ -270,6 +337,9 @@ func (page *IndexPage) Run(ctx context.Context) error {
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
+
+	// Approvals started from the menu are cancelled when the app quits.
+	page.ctx = ctx
 
 	go page.loop(ctx)
 

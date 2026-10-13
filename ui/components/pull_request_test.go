@@ -95,3 +95,48 @@ func TestOpenInBrowserRejectsBadLinks(t *testing.T) {
 		})
 	}
 }
+
+func TestApproveOption(t *testing.T) {
+	approved := 0
+	approve := func() error { approved++; return nil }
+
+	testCases := []struct {
+		name     string
+		approve  func() error
+		expected []string
+	}{
+		{name: "approve shown when available", approve: approve, expected: []string{"Open in browser", "Approve"}},
+		{name: "approve hidden when nil", approve: nil, expected: []string{"Open in browser"}},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			menu := components.PullRequestOptions{Permalink: "https://x", Approve: tc.approve}.Build()
+
+			got := make([]string, 0, len(menu.Items))
+			for _, item := range menu.Items {
+				button, ok := item.(ui.SystrayButton)
+				if !ok {
+					t.Fatalf("option is %T", item)
+				}
+
+				got = append(got, button.Title)
+
+				if button.Title == "Approve" {
+					err := button.Action()
+					if err != nil {
+						t.Fatal(err)
+					}
+				}
+			}
+
+			if strings.Join(got, ",") != strings.Join(tc.expected, ",") {
+				t.Fatalf("got %v, expected %v", got, tc.expected)
+			}
+		})
+	}
+
+	if approved != 1 {
+		t.Fatalf("approve ran %d times, expected 1", approved)
+	}
+}

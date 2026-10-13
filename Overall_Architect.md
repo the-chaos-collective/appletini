@@ -28,7 +28,7 @@ main ──dig──▶ config ─▶ gitter.GraphQLClient (Querier)
 | `config` | Load `config.json` from the working directory, creating the default if missing, and migrate it to the latest version | `config/migration`, `logging` |
 | `config/migration` | Detect the config version and step it forward version by version (optionally keeping backups) | `migration_types`, `v1`, `v2`, `logging` |
 | `config/migration/v1`, `v2` | Schema, defaults, load/save and `ToNext()` for each config version. v2 reads the token from the env var it names | `migration_types` (v1 also depends on v2 to migrate into it) |
-| `gitter` | `Querier` interface and `GraphQLClient`: one shared HTTP client, per-request timeout, ctx cancellation, non-2xx responses turned into errors. Also the `PullRequest` model | `status` |
+| `gitter` | `Querier` and `Mutator` interfaces and `GraphQLClient`: one shared HTTP client, per-request timeout, ctx cancellation, non-2xx responses turned into errors. Also the `PullRequest` model | `status` |
 | `gitter/gittertest` | Fake `Querier` for tests | none |
 | `trackerkey` | Result-key format shared by the poller and UI (`personal`, `label_0`, …), plus parsing and display order | none |
 | `queries` | `Query` interface | `gitter` |
@@ -39,11 +39,12 @@ main ──dig──▶ config ─▶ gitter.GraphQLClient (Querier)
 | `hasher` | Sends the PR map only when its hash changed; honours ctx while sending | `gitter`, `logging` |
 | `polling` | Builds the queries from config (using `trackerkey` ids) and runs the poll loop until ctx is cancelled | `config`, `gitter`, `hasher`, `queries/*`, `trackerkey` |
 | `status` | Classifies a PR's review, mergeable and CI (checks) state into emoji, message and icon flags | none |
+| `reviews` | Approves a PR via the `addPullRequestReview` mutation, with values sent as GraphQL variables | `gitter` |
 | `actions` | Opens a link in the OS browser (`open` / `xdg-open` / `rundll32`) after validating it | none |
 | `ui` | Fyne systray wrapper: menu model, `SetMenu`/`SetIcon` guarded by one mutex, `Quit` | `logging`, fyne |
 | `ui/components` | Menu items for a PR and its options | `ui`, `status`, `actions` |
 | `ui/icons` | Embedded tray icons | fyne |
-| `ui/pages` | Index page: one loop that turns poller updates into the menu and the tray icon | `ui`, `ui/components`, `ui/icons`, `config`, `gitter`, `trackerkey` |
+| `ui/pages` | Index page: one loop that turns poller updates into the menu and the tray icon; runs Approve in the background and reports it as a notification | `ui`, `ui/components`, `ui/icons`, `config`, `gitter`, `reviews`, `trackerkey` |
 | `logging` | `Logger` interface and charmbracelet/log implementation | none |
 
 There are no import cycles. `trackerkey`, `status`, `logging`,

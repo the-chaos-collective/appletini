@@ -15,6 +15,8 @@ type PullRequest struct {
 	BaseRefName string
 	Permalink   string
 	Status      status.Status
+	// Approve is passed to the PR's options; nil hides the Approve option.
+	Approve func() error
 }
 
 func (pr PullRequest) makeTitle() string {
@@ -53,6 +55,7 @@ func (pr PullRequest) makeText() string {
 func (pr PullRequest) Build() ui.Itemable {
 	submenu := PullRequestOptions{
 		Permalink: pr.Permalink,
+		Approve:   pr.Approve,
 	}.Build()
 
 	return ui.SystraySubmenu{

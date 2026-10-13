@@ -1,12 +1,15 @@
 package pages
 
 import (
+	"context"
 	"errors"
+	"slices"
 	"testing"
 
 	"appletini/config"
 	v2 "appletini/config/migration/v2"
 	"appletini/gitter"
+	"appletini/reviews"
 	"appletini/trackerkey"
 	"appletini/ui"
 	"appletini/ui/icons"
@@ -192,7 +195,7 @@ func TestBuildTree(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			// Repeat: map iteration order must not affect the result.
 			for range 20 {
-				items, state, err := buildTree(tc.prs, trackers(), quit)
+				items, state, err := buildTree(tc.prs, trackers(), treeActions{quit: quit})
 
 				if (err != nil) != tc.expectErr {
 					t.Fatalf("got error %v, expectErr=%v", err, tc.expectErr)
@@ -225,7 +228,7 @@ func TestBuildTreeGroupContents(t *testing.T) {
 	//exhaustruct:ignore
 	prs := map[string][]gitter.PullRequest{"label_0": {{Number: 1, Title: "a"}, {Number: 2, Title: "b"}}}
 
-	items, _, err := buildTree(prs, trackers(), func() error { return nil })
+	items, _, err := buildTree(prs, trackers(), treeActions{quit: func() error { return nil }})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -237,5 +240,171 @@ func TestBuildTreeGroupContents(t *testing.T) {
 
 	if len(group.Submenu.Items) != 2 {
 		t.Fatalf("group has %d PRs, expected 2", len(group.Submenu.Items))
+	}
+}
+
+// prOptions returns the option titles of every PR in the group titled group.
+func prOptions(t *testing.T, items []ui.Itemable, group string) [][]string {
+	t.Helper()
+
+	for _, item := range items {
+		sub, ok := item.(ui.SystraySubmenu)
+		if !ok || sub.Title != group {
+			continue
+		}
+
+		var out [][]string
+
+		for _, prItem := range sub.Submenu.Items {
+			pr, ok := prItem.(ui.SystraySubmenu)
+			if !ok {
+				t.Fatalf("PR entry is %T", prItem)
+			}
+
+			out = append(out, titles(pr.Submenu.Items))
+		}
+
+		return out
+	}
+
+	t.Fatalf("group %q not found", group)
+
+	return nil
+}
+
+func TestBuildTreeApproveOption(t *testing.T) {
+	//exhaustruct:ignore
+	pr := gitter.PullRequest{Id: "PR_1", Number: 1}
+	prs := map[string][]gitter.PullRequest{"personal": {pr}, "repo_0": {pr}}
+
+	approve := func(gitter.PullRequest) func() error { return func() error { return nil } }
+
+	testCases := []struct {
+		name         string
+		approve      func(gitter.PullRequest) func() error
+		expectedOwn  []string
+		expectedRepo []string
+	}{
+		{
+			name:         "approve offered on other trackers but not on your own PRs",
+			approve:      approve,
+			expectedOwn:  []string{"Open in browser"},
+			expectedRepo: []string{"Open in browser", "Approve"},
+		},
+		{
+			name:         "no approver means no approve option anywhere",
+			approve:      nil,
+			expectedOwn:  []string{"Open in browser"},
+			expectedRepo: []string{"Open in browser"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			items, _, err := buildTree(prs, trackers(), treeActions{quit: func() error { return nil }, approve: tc.approve})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if got := prOptions(t, items, "My Pull Requests")[0]; !slices.Equal(got, tc.expectedOwn) {
+				t.Fatalf("own PR options %v, expected %v", got, tc.expectedOwn)
+			}
+
+			if got := prOptions(t, items, "Appletini")[0]; !slices.Equal(got, tc.expectedRepo) {
+				t.Fatalf("repo PR options %v, expected %v", got, tc.expectedRepo)
+			}
+		})
+	}
+}
+
+type fakeApprover struct {
+	err    error
+	gotIDs []string
+}
+
+func (f *fakeApprover) Approve(_ context.Context, prID, _ string) (reviews.Review, error) {
+	f.gotIDs = append(f.gotIDs, prID)
+	if f.err != nil {
+		return reviews.Review{}, f.err
+	}
+
+	return reviews.Review{ID: "PRR_1", URL: "https://x"}, nil
+}
+
+func TestApprovePR(t *testing.T) {
+	errGitHub := errors.New("Can not approve your own pull request")
+	errNotify := errors.New("notifications unavailable")
+
+	//exhaustruct:ignore
+	pr := gitter.PullRequest{Id: "PR_42", Number: 42, Title: "Add tray"}
+
+	testCases := []struct {
+		name            string
+		approver        *fakeApprover
+		notifyErr       error
+		expectedTitle   string
+		expectedContent string
+		expectedErrs    []error
+	}{
+		{
+			name:            "success is notified",
+			approver:        &fakeApprover{},
+			expectedTitle:   "Approved #42",
+			expectedContent: "Add tray",
+		},
+		{
+			name:            "GitHub error is notified and returned",
+			approver:        &fakeApprover{err: errGitHub},
+			expectedTitle:   "Couldn't approve #42",
+			expectedContent: errGitHub.Error(),
+			expectedErrs:    []error{errGitHub},
+		},
+		{
+			name:            "notification failure is returned too",
+			approver:        &fakeApprover{err: errGitHub},
+			notifyErr:       errNotify,
+			expectedTitle:   "Couldn't approve #42",
+			expectedContent: errGitHub.Error(),
+			expectedErrs:    []error{errGitHub, errNotify},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var gotTitle, gotContent string
+
+			notify := func(title, content string) error {
+				gotTitle, gotContent = title, content
+				return tc.notifyErr
+			}
+
+			err := approvePR(context.Background(), tc.approver, notify, pr)
+
+			for _, want := range tc.expectedErrs {
+				if !errors.Is(err, want) {
+					t.Fatalf("error %v does not include %v", err, want)
+				}
+			}
+
+			if len(tc.expectedErrs) == 0 && err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			if gotTitle != tc.expectedTitle || gotContent != tc.expectedContent {
+				t.Fatalf("notified %q / %q, expected %q / %q", gotTitle, gotContent, tc.expectedTitle, tc.expectedContent)
+			}
+
+			if !slices.Equal(tc.approver.gotIDs, []string{"PR_42"}) {
+				t.Fatalf("approved ids %v", tc.approver.gotIDs)
+			}
+		})
+	}
+}
+
+func TestApprovePRWithoutApprover(t *testing.T) {
+	//exhaustruct:ignore
+	err := approvePR(context.Background(), nil, func(string, string) error { return nil }, gitter.PullRequest{})
+	if err == nil {
+		t.Fatal("expected an error without an approver")
 	}
 }

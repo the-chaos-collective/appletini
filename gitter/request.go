@@ -31,7 +31,14 @@ type Querier interface {
 	Query(ctx context.Context, query string, response any) error
 }
 
-// GraphQLClient is a Querier backed by a single, reused HTTP client.
+// Mutator runs a GraphQL mutation with variables and decodes the "data"
+// field into response. Values are always passed as variables, never pasted
+// into the mutation text.
+type Mutator interface {
+	Mutate(ctx context.Context, mutation string, vars map[string]any, response any) error
+}
+
+// GraphQLClient is a Querier and Mutator backed by a single, reused HTTP client.
 type GraphQLClient struct {
 	client  *graphql.Client
 	token   string
@@ -73,24 +80,38 @@ func NewGraphQLClient(url, token string, timeout time.Duration) (*GraphQLClient,
 
 // Query runs query, honouring ctx cancellation and the client's per-request timeout.
 func (c *GraphQLClient) Query(ctx context.Context, query string, response any) error {
+	return c.run(ctx, "query", query, nil, response)
+}
+
+// Mutate runs mutation with vars, honouring ctx cancellation and the client's
+// per-request timeout.
+func (c *GraphQLClient) Mutate(ctx context.Context, mutation string, vars map[string]any, response any) error {
+	return c.run(ctx, "mutation", mutation, vars, response)
+}
+
+func (c *GraphQLClient) run(ctx context.Context, kind, document string, vars map[string]any, response any) error {
 	if response == nil {
 		return ErrNilResponse
 	}
 
 	err := ctx.Err()
 	if err != nil {
-		return fmt.Errorf("before executing GraphQL query: %w", err)
+		return fmt.Errorf("before executing GraphQL %s: %w", kind, err)
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, c.timeout)
 	defer cancel()
 
-	req := graphql.NewRequest(query)
+	req := graphql.NewRequest(document)
 	req.Header.Set("Authorization", "Bearer "+c.token)
+
+	for key, value := range vars {
+		req.Var(key, value)
+	}
 
 	err = c.client.Run(ctx, req, response)
 	if err != nil {
-		return fmt.Errorf("executing GraphQL query: %w", err)
+		return fmt.Errorf("executing GraphQL %s: %w", kind, err)
 	}
 
 	return nil

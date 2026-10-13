@@ -85,6 +85,21 @@ func (s *Systray) SetMenu(items []Itemable) error {
 	return s.MainMenu.sync(s.Logger)
 }
 
+// Notify shows a desktop notification.
+func (s *Systray) Notify(title, content string) error {
+	s.mu.Lock()
+	fyneApp := s.fyneApp
+	s.mu.Unlock()
+
+	if fyneApp == nil {
+		return ErrNotSetup
+	}
+
+	fyneApp.SendNotification(fyne.NewNotification(title, content))
+
+	return nil
+}
+
 // Run blocks until the app quits.
 func (s *Systray) Run() error {
 	s.mu.Lock()
