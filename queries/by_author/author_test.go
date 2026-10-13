@@ -93,6 +93,7 @@ func TestGeneratedQuery(t *testing.T) {
 		`author_0_1: search(query: "repo:the-chaos-collective/appletini is:open type:pr author:tobyselway", type: ISSUE, first: 10)`,
 		"statusCheckRollup",
 		"viewerLatestReview",
+		"viewerDidAuthor",
 	} {
 		if !strings.Contains(sent, want) {
 			t.Fatalf("query does not contain %q:\n%s", want, sent)

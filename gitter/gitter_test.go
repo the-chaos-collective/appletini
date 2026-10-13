@@ -183,6 +183,8 @@ func TestApprovableByViewer(t *testing.T) {
 		{name: "changes requested by you", pr: gitter.PullRequest{ReviewDecision: "CHANGES_REQUESTED", Mergeable: "MERGEABLE", ViewerReview: "CHANGES_REQUESTED"}, expected: true},
 		//exhaustruct:ignore
 		{name: "changes requested by you, with a conflict", pr: gitter.PullRequest{ReviewDecision: "CHANGES_REQUESTED", Mergeable: "CONFLICTING", ViewerReview: "CHANGES_REQUESTED"}, expected: false},
+		//exhaustruct:ignore
+		{name: "your own PR in a tracker", pr: gitter.PullRequest{ReviewDecision: "REVIEW_REQUIRED", Mergeable: "MERGEABLE", ViewerAuthor: true}, expected: false},
 	}
 
 	for _, tc := range testCases {

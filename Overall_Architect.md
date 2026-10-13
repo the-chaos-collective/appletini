@@ -40,12 +40,13 @@ main ──dig──▶ config ─▶ gitter.GraphQLClient (Querier)
 | `polling` | Builds the queries from config (using `trackerkey` ids) and runs the poll loop until ctx is cancelled | `config`, `gitter`, `hasher`, `queries/*`, `trackerkey` |
 | `status` | Classifies a PR's review, mergeable and CI (checks) state into emoji, message and icon flags | none |
 | `reviews` | Approves a PR via the `addPullRequestReview` mutation, with values sent as GraphQL variables | `gitter` |
+| `newprs` | Spots PRs that are new to review since earlier polls (skips startup, your own PRs and ones you approved) | `gitter`, `trackerkey` |
 | `pullrequests` | Merges and closes a PR via the `mergePullRequest` / `closePullRequest` mutations, with the id sent as a GraphQL variable | `gitter` |
 | `actions` | Opens a link in the OS browser (`open` / `xdg-open` / `rundll32`) after validating it | none |
 | `ui` | Fyne systray wrapper: menu model, `SetMenu`/`SetIcon` guarded by one mutex, `Notify`, `Quit` | `logging`, fyne |
 | `ui/components` | Menu items for a PR and its options | `ui`, `status`, `actions` |
 | `ui/icons` | Embedded tray icons | fyne |
-| `ui/pages` | Index page: one loop that turns poller updates into the menu and the tray icon; runs Approve, Merge and Close in the background and reports the result as a notification | `ui`, `ui/components`, `ui/icons`, `config`, `gitter`, `pullrequests`, `reviews`, `trackerkey` |
+| `ui/pages` | Index page: one loop that turns poller updates into the menu and the tray icon; notifies about new PRs to review; runs Approve, Merge and Close in the background and reports the result as a notification | `ui`, `ui/components`, `ui/icons`, `config`, `gitter`, `newprs`, `pullrequests`, `reviews`, `trackerkey` |
 | `logging` | `Logger` interface and charmbracelet/log implementation | none |
 
 There are no import cycles. `trackerkey`, `status`, `logging`,

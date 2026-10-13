@@ -31,6 +31,7 @@ fragment getPullRequest on PullRequestConnection {
       permalink
       mergeable
       state
+      viewerDidAuthor
       viewerLatestReview {
         state
       }

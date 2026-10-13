@@ -56,6 +56,7 @@ func TestGetAll(t *testing.T) {
 					ReviewRequests: 1,
 					ReviewCount:    5,
 					ChecksState:    "PENDING",
+					ViewerAuthor:   true,
 				}},
 			},
 		},

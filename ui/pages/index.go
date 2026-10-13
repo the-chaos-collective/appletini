@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 
 	"appletini/config"
 	"appletini/gitter"
 	"appletini/logging"
+	"appletini/newprs"
 	"appletini/pullrequests"
 	"appletini/reviews"
 	"appletini/trackerkey"
@@ -314,6 +316,62 @@ func (page *IndexPage) background(what string, pr gitter.PullRequest, fn func(ct
 	}
 }
 
+// maxListedPRs caps how many PRs a single notification lists by name.
+const maxListedPRs = 5
+
+// announceNewPRs shows one desktop notification for the PRs that are new to
+// review since the last poll. It goes through the system's notification
+// service, so Do Not Disturb silences it like any other notification.
+func (page *IndexPage) announceNewPRs(detector *newprs.Detector, prs map[string][]gitter.PullRequest) {
+	found, err := detector.Update(prs)
+	if err != nil {
+		page.Logger.Error("checking for new PRs", "err", err)
+	}
+
+	if len(found) == 0 {
+		return
+	}
+
+	title, content := newPRsNotification(found, page.Trackers)
+
+	err = page.systray.Notify(title, content)
+	if err != nil {
+		page.Logger.Error("notifying about new PRs", "err", err)
+	}
+}
+
+// newPRsNotification formats the notification for found, e.g.
+// "New PR to review" / "#42 Add tray (Appletini)".
+func newPRsNotification(found []newprs.Found, trackers config.Tracking) (string, string) {
+	title := "New PR to review"
+	if len(found) > 1 {
+		title = fmt.Sprintf("%d new PRs to review", len(found))
+	}
+
+	lines := make([]string, 0, min(len(found), maxListedPRs)+1)
+
+	for i, f := range found {
+		if i == maxListedPRs {
+			lines = append(lines, fmt.Sprintf("and %d more", len(found)-maxListedPRs))
+			break
+		}
+
+		group := f.Key
+
+		key, err := trackerkey.Parse(f.Key)
+		if err == nil {
+			name, titleErr := groupTitle(key, trackers)
+			if titleErr == nil {
+				group = name
+			}
+		}
+
+		lines = append(lines, fmt.Sprintf("#%d %s (%s)", f.PR.Number, f.PR.Title, group))
+	}
+
+	return title, strings.Join(lines, "\n")
+}
+
 // requestRefresh waits delay, then asks the poller for an early poll. It gives
 // up if ctx is cancelled, and never blocks: if a refresh is already pending,
 // this one is merged into it.
@@ -408,6 +466,8 @@ func (page *IndexPage) loop(ctx context.Context) {
 	//exhaustruct:ignore
 	state := iconState{}
 
+	var detector newprs.Detector
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -425,6 +485,8 @@ func (page *IndexPage) loop(ctx context.Context) {
 			}
 
 			state.green, state.red = prState.green, prState.red
+
+			page.announceNewPRs(&detector, prs)
 
 		case hasErr := <-page.HasErr:
 			state.err = hasErr

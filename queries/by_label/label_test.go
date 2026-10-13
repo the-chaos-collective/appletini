@@ -106,6 +106,10 @@ func TestGeneratedQueryQuotesValues(t *testing.T) {
 				t.Fatalf("query does not contain %s:\n%s", tc.expected, sent)
 			}
 
+			if !strings.Contains(sent, "viewerDidAuthor") {
+				t.Fatalf("query does not ask whether you authored the PR:\n%s", sent)
+			}
+
 			if !strings.Contains(sent, "viewerLatestReview") {
 				t.Fatalf("query does not request your own review:\n%s", sent)
 			}
@@ -131,7 +135,8 @@ const labelResponse = `{
       "reviewRequests": {"totalCount": 2},
       "reviews": {"totalCount": 3},
       "commits": {"nodes": [{"commit": {"statusCheckRollup": {"state": "FAILURE"}}}]},
-      "viewerLatestReview": {"state": "APPROVED"}
+      "viewerLatestReview": {"state": "APPROVED"},
+      "viewerDidAuthor": true
     }}
   ]}}}
 }`
@@ -153,6 +158,7 @@ func TestGetAll(t *testing.T) {
 			Mergeable:      "MERGEABLE",
 			ChecksState:    "FAILURE",
 			ViewerReview:   "APPROVED",
+			ViewerAuthor:   true,
 		}},
 	}
 

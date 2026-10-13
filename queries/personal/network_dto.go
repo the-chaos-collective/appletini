@@ -47,6 +47,7 @@ func (pr pullRequestPersonal) transform() gitter.PullRequest {
 		Mergeable:      pr.Mergeable,
 		ChecksState:    pr.Commits.ChecksState(),
 		ViewerReview:   pr.ViewerReview.StateOrEmpty(),
+		ViewerAuthor:   true, // viewer.pullRequests only lists your own
 	}
 }
 
